@@ -19,7 +19,7 @@ public class DatabaseConnection {
     
     // Default credentials - should be moved to configuration file in production
     private static final String DEFAULT_USERNAME = "root";
-    private static final String DEFAULT_PASSWORD = "Baxuta777"; // root
+    private static final String DEFAULT_PASSWORD = "root"; // root
     
     // Connection properties for better performance and reliability
     private static final Properties CONNECTION_PROPS = new Properties();
