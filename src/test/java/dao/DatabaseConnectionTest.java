@@ -54,7 +54,7 @@ class DatabaseConnectionTest {
     void testGetConnection_CustomCredentials_Success() {
         // Assuming default credentials work, test with same credentials explicitly
         String username = "root";
-        String password = "Baxuta777";
+        String password = "root";
 
         // Act & Assert
         assertDoesNotThrow(() -> {
@@ -73,7 +73,7 @@ class DatabaseConnectionTest {
         // Test with an existing database (using same DB for test)
         String dbName = "quiz_website";
         String username = "root";
-        String password = "Baxuta777";
+        String password = "root";
 
         // Act & Assert
         assertDoesNotThrow(() -> {
@@ -104,7 +104,7 @@ class DatabaseConnectionTest {
     void testGetConnection_InvalidDatabase_ThrowsException() {
         String invalidDbName = "nonexistent_database_12345";
         String username = "root";
-        String password = "Baxuta777";
+        String password = "root";
 
         // Act & Assert
         assertThrows(SQLException.class, () -> {
@@ -130,7 +130,7 @@ class DatabaseConnectionTest {
     @DisplayName("Test connection test with valid custom credentials")
     void testTestConnection_ValidCredentials_Success() {
         String username = "root";
-        String password = "Baxuta777";
+        String password = "root";
 
         // Act
         boolean connectionWorking = DatabaseConnection.testConnection(username, password);
