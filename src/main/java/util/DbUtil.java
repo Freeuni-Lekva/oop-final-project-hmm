@@ -15,9 +15,13 @@ public class DbUtil {
     private static final Properties CONNECTION_PROPS = new Properties();
 
     static {
-        try {
+        //
+        try
+        {
             Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e)
+        {
             throw new RuntimeException("MySQL JDBC Driver not found", e);
         }
         CONNECTION_PROPS.setProperty("useSSL", "false");
