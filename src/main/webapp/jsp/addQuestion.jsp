@@ -36,7 +36,7 @@
             var div = document.createElement('div');
             div.className = 'choice-input';
             var type = document.getElementById('questionType').value;
-            var requiredAttr = (type === 'multiple-choice') ? 'required' : '';//
+            var requiredAttr = (type === 'multiple-choice') ? 'required' : '';
             div.innerHTML = '<input type="text" name="choices" placeholder="Choice" ' + requiredAttr + '> <button type="button" onclick="this.parentNode.remove()">Remove</button>';
             group.appendChild(div);
         }
