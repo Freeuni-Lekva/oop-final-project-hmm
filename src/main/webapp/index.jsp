@@ -1,12 +1,20 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<!DOCTYPE html>
+<%@ page contentType="text/html;charset=UTF-8" %>
+<%
+    Object user = session.getAttribute("user");
+    if (user == null) {
+        response.sendRedirect("login");
+        return;
+    }
+%>
 <html>
 <head>
-  <title>JSP - Hello World</title>
+    <title>Home</title>
 </head>
 <body>
-<h1><%= "Hello World!" %></h1>
-<br/>
-<a href="hello-servlet">Hello Servlet</a>
+    <h1>Welcome to the Quiz Website!</h1>
+    <p>You are logged in.</p>
+    <form action="logout" method="get">
+        <input type="submit" value="Logout" />
+    </form>
 </body>
 </html>
