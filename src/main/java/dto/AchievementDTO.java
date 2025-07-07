@@ -7,13 +7,13 @@ import java.util.Date;
  * Contains achievement information for display on the website
  * Includes user who earned it and achievement details
  */
-public class AchievementDTO {
-    private int achievementId;
-    private UserDTO user;
-    private String achievementType;
-    private Date dateEarned;
-    private String description;
-    
+public record AchievementDTO(
+    int achievementId,
+    UserDTO user,
+    String achievementType,
+    Date dateEarned,
+    String description
+) {
     // Achievement type constants
     public static final String TYPE_AMATEUR_AUTHOR = "amateur_author";
     public static final String TYPE_PROLIFIC_AUTHOR = "prolific_author";
@@ -21,20 +21,6 @@ public class AchievementDTO {
     public static final String TYPE_QUIZ_MACHINE = "quiz_machine";
     public static final String TYPE_I_AM_THE_GREATEST = "i_am_the_greatest";
     public static final String TYPE_PRACTICE_MAKES_PERFECT = "practice_makes_perfect";
-    
-    // Default constructor
-    public AchievementDTO() {
-    }
-    
-    // Constructor with all fields
-    public AchievementDTO(int achievementId, UserDTO user, String achievementType, 
-                         Date dateEarned, String description) {
-        this.achievementId = achievementId;
-        this.user = user;
-        this.achievementType = achievementType;
-        this.dateEarned = dateEarned;
-        this.description = description;
-    }
     
     // Helper methods for achievement type checking
     public boolean isAmateurAuthor() {
@@ -63,42 +49,28 @@ public class AchievementDTO {
     
     // Helper method to get achievement display name
     public String getDisplayName() {
-        switch (achievementType) {
-            case TYPE_AMATEUR_AUTHOR:
-                return "Amateur Author";
-            case TYPE_PROLIFIC_AUTHOR:
-                return "Prolific Author";
-            case TYPE_PRODIGIOUS_AUTHOR:
-                return "Prodigious Author";
-            case TYPE_QUIZ_MACHINE:
-                return "Quiz Machine";
-            case TYPE_I_AM_THE_GREATEST:
-                return "I am the Greatest";
-            case TYPE_PRACTICE_MAKES_PERFECT:
-                return "Practice Makes Perfect";
-            default:
-                return "Unknown Achievement";
-        }
+        return switch (achievementType) {
+            case TYPE_AMATEUR_AUTHOR -> "Amateur Author";
+            case TYPE_PROLIFIC_AUTHOR -> "Prolific Author";
+            case TYPE_PRODIGIOUS_AUTHOR -> "Prodigious Author";
+            case TYPE_QUIZ_MACHINE -> "Quiz Machine";
+            case TYPE_I_AM_THE_GREATEST -> "I am the Greatest";
+            case TYPE_PRACTICE_MAKES_PERFECT -> "Practice Makes Perfect";
+            default -> "Unknown Achievement";
+        };
     }
     
     // Helper method to get achievement icon (you can customize this)
     public String getIconClass() {
-        switch (achievementType) {
-            case TYPE_AMATEUR_AUTHOR:
-                return "achievement-icon amateur-author";
-            case TYPE_PROLIFIC_AUTHOR:
-                return "achievement-icon prolific-author";
-            case TYPE_PRODIGIOUS_AUTHOR:
-                return "achievement-icon prodigious-author";
-            case TYPE_QUIZ_MACHINE:
-                return "achievement-icon quiz-machine";
-            case TYPE_I_AM_THE_GREATEST:
-                return "achievement-icon greatest";
-            case TYPE_PRACTICE_MAKES_PERFECT:
-                return "achievement-icon practice";
-            default:
-                return "achievement-icon default";
-        }
+        return switch (achievementType) {
+            case TYPE_AMATEUR_AUTHOR -> "achievement-icon amateur-author";
+            case TYPE_PROLIFIC_AUTHOR -> "achievement-icon prolific-author";
+            case TYPE_PRODIGIOUS_AUTHOR -> "achievement-icon prodigious-author";
+            case TYPE_QUIZ_MACHINE -> "achievement-icon quiz-machine";
+            case TYPE_I_AM_THE_GREATEST -> "achievement-icon greatest";
+            case TYPE_PRACTICE_MAKES_PERFECT -> "achievement-icon practice";
+            default -> "achievement-icon default";
+        };
     }
     
     // Helper method to format date earned
@@ -123,68 +95,15 @@ public class AchievementDTO {
         }
     }
     
-    // Getters and Setters
-    public int getAchievementId() {
-        return achievementId;
-    }
-    
-    public void setAchievementId(int achievementId) {
-        this.achievementId = achievementId;
-    }
-    
-    public UserDTO getUser() {
-        return user;
-    }
-    
-    public void setUser(UserDTO user) {
-        this.user = user;
-    }
-    
-    public String getAchievementType() {
-        return achievementType;
-    }
-    
-    public void setAchievementType(String achievementType) {
-        this.achievementType = achievementType;
-    }
-    
-    public Date getDateEarned() {
-        return dateEarned;
-    }
-    
-    public void setDateEarned(Date dateEarned) {
-        this.dateEarned = dateEarned;
-    }
-    
-    public String getDescription() {
-        return description;
-    }
-    
-    public void setDescription(String description) {
-        this.description = description;
-    }
-    
-    @Override
-    public String toString() {
-        return "AchievementDTO{" +
-                "achievementId=" + achievementId +
-                ", user=" + user +
-                ", achievementType='" + achievementType + '\'' +
-                ", dateEarned=" + dateEarned +
-                ", description='" + description + '\'' +
-                '}';
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        AchievementDTO that = (AchievementDTO) obj;
-        return achievementId == that.achievementId;
-    }
-    
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(achievementId);
+    // Static factory method for conversion from Achievement model
+    public static AchievementDTO fromAchievement(model.Achievement achievement, UserDTO user) {
+        if (achievement == null) return null;
+        return new AchievementDTO(
+            achievement.getAchievementId(),
+            user,
+            achievement.getAchievementType(),
+            achievement.getDateEarned(),
+            achievement.getDescription()
+        );
     }
 } 
