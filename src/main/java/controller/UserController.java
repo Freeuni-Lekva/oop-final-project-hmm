@@ -19,7 +19,8 @@ public class UserController extends HttpServlet {
     private UserDAO userDAO;
 
     @Override
-    public void init() throws ServletException {
+    public void init() throws ServletException
+    {
 
         try
         {
@@ -45,7 +46,7 @@ public class UserController extends HttpServlet {
             case "/logout":
                 HttpSession session = req.getSession(false);
                 if (session != null) session.invalidate();
-                resp.sendRedirect("login");
+                resp.sendRedirect(req.getContextPath() + "/");
                 break;
             default:
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -101,7 +102,7 @@ public class UserController extends HttpServlet {
             user.setPasswordHash(hash);
             user.setEmail(email);
             userDAO.createUser(user);
-            resp.sendRedirect("login");
+            resp.sendRedirect(req.getContextPath() + "/");
         } catch (SQLException e) {
             throw new ServletException(e);
         }
