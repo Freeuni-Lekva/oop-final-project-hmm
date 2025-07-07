@@ -7,33 +7,16 @@ import java.util.Date;
  * Contains quiz attempt information for display on the website
  * Includes user and quiz information as DTOs instead of just IDs
  */
-public class QuizAttemptDTO {
-    private int attemptId;
-    private UserDTO user;
-    private QuizDTO quiz;
-    private double score;
-    private int totalQuestions;
-    private long timeTaken; // Time in seconds
-    private Date dateTaken;
-    private boolean isPractice;
-    
-    // Default constructor
-    public QuizAttemptDTO() {
-    }
-    
-    // Constructor with all fields
-    public QuizAttemptDTO(int attemptId, UserDTO user, QuizDTO quiz, double score, 
-                         int totalQuestions, long timeTaken, Date dateTaken, boolean isPractice) {
-        this.attemptId = attemptId;
-        this.user = user;
-        this.quiz = quiz;
-        this.score = score;
-        this.totalQuestions = totalQuestions;
-        this.timeTaken = timeTaken;
-        this.dateTaken = dateTaken;
-        this.isPractice = isPractice;
-    }
-    
+public record QuizAttemptDTO(
+    int attemptId,
+    UserDTO user,
+    QuizDTO quiz,
+    double score,
+    int totalQuestions,
+    long timeTaken,
+    Date dateTaken,
+    boolean isPractice
+) {
     // Helper method to calculate percentage score
     public double getPercentageScore() {
         if (totalQuestions == 0) return 0.0;
@@ -55,95 +38,18 @@ public class QuizAttemptDTO {
         }
     }
     
-    // Getters and Setters
-    public int getAttemptId() {
-        return attemptId;
-    }
-    
-    public void setAttemptId(int attemptId) {
-        this.attemptId = attemptId;
-    }
-    
-    public UserDTO getUser() {
-        return user;
-    }
-    
-    public void setUser(UserDTO user) {
-        this.user = user;
-    }
-    
-    public QuizDTO getQuiz() {
-        return quiz;
-    }
-    
-    public void setQuiz(QuizDTO quiz) {
-        this.quiz = quiz;
-    }
-    
-    public double getScore() {
-        return score;
-    }
-    
-    public void setScore(double score) {
-        this.score = score;
-    }
-    
-    public int getTotalQuestions() {
-        return totalQuestions;
-    }
-    
-    public void setTotalQuestions(int totalQuestions) {
-        this.totalQuestions = totalQuestions;
-    }
-    
-    public long getTimeTaken() {
-        return timeTaken;
-    }
-    
-    public void setTimeTaken(long timeTaken) {
-        this.timeTaken = timeTaken;
-    }
-    
-    public Date getDateTaken() {
-        return dateTaken;
-    }
-    
-    public void setDateTaken(Date dateTaken) {
-        this.dateTaken = dateTaken;
-    }
-    
-    public boolean isPractice() {
-        return isPractice;
-    }
-    
-    public void setPractice(boolean practice) {
-        isPractice = practice;
-    }
-    
-    @Override
-    public String toString() {
-        return "QuizAttemptDTO{" +
-                "attemptId=" + attemptId +
-                ", user=" + user +
-                ", quiz=" + quiz +
-                ", score=" + score +
-                ", totalQuestions=" + totalQuestions +
-                ", timeTaken=" + timeTaken +
-                ", dateTaken=" + dateTaken +
-                ", isPractice=" + isPractice +
-                '}';
-    }
-    
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
-        QuizAttemptDTO that = (QuizAttemptDTO) obj;
-        return attemptId == that.attemptId;
-    }
-    
-    @Override
-    public int hashCode() {
-        return Integer.hashCode(attemptId);
+    // Static factory method for conversion from QuizAttempt model
+    public static QuizAttemptDTO fromQuizAttempt(model.QuizAttempt attempt, UserDTO user, QuizDTO quiz) {
+        if (attempt == null) return null;
+        return new QuizAttemptDTO(
+            attempt.getAttemptId(),
+            user,
+            quiz,
+            attempt.getScore(),
+            attempt.getTotalQuestions(),
+            attempt.getTimeTaken(),
+            attempt.getDateTaken(),
+            attempt.isPractice()
+        );
     }
 } 
