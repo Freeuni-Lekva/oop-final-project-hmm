@@ -20,11 +20,14 @@ public class UserController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        Connection connection = null;
-        try {
-            connection = DbUtil.getConnection();
-            userDAO = new UserDAO(connection);
-        } catch (SQLException e) {
+
+        try
+        {
+            Connection connection = (Connection) getServletContext().getAttribute("DBConnection");
+            userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
+        }
+        catch (Exception e)
+        {
             throw new ServletException("DB connection error", e);
         }
     }
