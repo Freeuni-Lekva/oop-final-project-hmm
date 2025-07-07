@@ -2,6 +2,8 @@ package listener;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import java.sql.Connection;
+
+import jakarta.servlet.annotation.WebListener;
 import util.DbUtil;
 import dao.UserDAO;
 import dao.QuizDAO;
@@ -11,6 +13,7 @@ import dao.FriendshipDAO;
 import dao.MessageDAO;
 import dao.AchievementDAO;
 
+@WebListener
 public class AppContextListener implements ServletContextListener
 {
     private Connection _connection;
