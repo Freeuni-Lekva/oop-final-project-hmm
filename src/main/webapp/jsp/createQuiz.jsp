@@ -22,6 +22,29 @@
         button:hover { background: #0056b3; }
         .error { color: red; margin-top: 1em; }
     </style>
+    <script>
+        function updateMutualExclusion() {
+            var onePage = document.getElementById('onePage');
+            var immediate = document.getElementById('immediateCorrection');
+            if (onePage.checked) {
+                immediate.checked = false;
+                immediate.disabled = true;
+                onePage.disabled = false;
+            } else if (immediate.checked) {
+                onePage.checked = false;
+                onePage.disabled = true;
+                immediate.disabled = false;
+            } else {
+                onePage.disabled = false;
+                immediate.disabled = false;
+            }
+        }
+        window.onload = function() {
+            document.getElementById('onePage').addEventListener('change', updateMutualExclusion);
+            document.getElementById('immediateCorrection').addEventListener('change', updateMutualExclusion);
+            updateMutualExclusion();
+        };
+    </script>
 </head>
 <body>
 <a href="${pageContext.request.contextPath}/" class="nav-home">← Home</a>
@@ -33,6 +56,11 @@
 
         <label for="description">Description:</label>
         <textarea id="description" name="description" rows="4" maxlength="500" placeholder="Enter a short description (optional)"></textarea>
+
+        <label><input type="checkbox" id="randomOrder" name="randomOrder" value="true"> Randomize question order</label>
+
+        <label><input type="checkbox" id="onePage" name="onePage" value="true" checked> Show all questions on one page</label>
+        <label><input type="checkbox" id="immediateCorrection" name="immediateCorrection" value="true"> Show correct answers immediately after each question</label>
 
         <button type="submit">Create Quiz</button>
     </form>

@@ -114,14 +114,10 @@ CREATE TABLE achievements (
     INDEX idx_achievement_type (achievement_type)
 );
 
--- Insert sample admin user (password: 'admin' hashed with HW4 Cracker style SHA-1)
--- Hash calculated: echo -n 'admin' | shasum gives d033e22ae348aeb5660fc2140aec35850c4da997
-INSERT INTO users (username, password_hash, email, is_admin) VALUES 
+-- Insert sample admin user
+-- Password: shasum gives d033e22ae348aeb5660fc2140aec35850c4da997
+INSERT INTO users (username, password_hash, email, is_admin) VALUES
 ('admin', 'd033e22ae348aeb5660fc2140aec35850c4da997', 'admin@quiz.com', TRUE);
 
--- Insert sample regular user (password: 'test' hashed with HW4 Cracker style SHA-1)  
--- Hash calculated: echo -n 'test' | shasum gives a94a8fe5ccb19ba61c4c0873d391e987982fbbd3
-INSERT INTO users (username, password_hash, email, is_admin) VALUES 
-('testuser', 'a94a8fe5ccb19ba61c4c0873d391e987982fbbd3', 'test@quiz.com', FALSE);
 
 COMMIT; 

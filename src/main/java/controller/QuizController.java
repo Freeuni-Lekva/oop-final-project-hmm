@@ -97,6 +97,9 @@ public class QuizController extends HttpServlet {
                     }
                     String title = req.getParameter("title");
                     String description = req.getParameter("description");
+                    boolean randomOrder = "true".equals(req.getParameter("randomOrder"));
+                    boolean onePage = "true".equals(req.getParameter("onePage"));
+                    boolean immediateCorrection = "true".equals(req.getParameter("immediateCorrection"));
                     HttpSession session = req.getSession(false);
                     model.User user = (model.User) session.getAttribute("user");
                     if (user == null) {
@@ -106,6 +109,9 @@ public class QuizController extends HttpServlet {
                     // Store quiz info in session, not DB
                     session.setAttribute("pendingQuizTitle", title);
                     session.setAttribute("pendingQuizDescription", description);
+                    session.setAttribute("pendingQuizRandomOrder", randomOrder);
+                    session.setAttribute("pendingQuizOnePage", onePage);
+                    session.setAttribute("pendingQuizImmediateCorrection", immediateCorrection);
                     session.setAttribute("pendingQuizQuestions", new ArrayList<Question>());
                     resp.sendRedirect(req.getContextPath() + "/quiz/addQuestion");
                     break;
@@ -144,9 +150,15 @@ public class QuizController extends HttpServlet {
                         // On finish: save quiz and questions to DB
                         String quizTitle = (String) qSession.getAttribute("pendingQuizTitle");
                         String quizDescription = (String) qSession.getAttribute("pendingQuizDescription");
+                        boolean quizRandomOrder = qSession.getAttribute("pendingQuizRandomOrder") != null && (Boolean) qSession.getAttribute("pendingQuizRandomOrder");
+                        boolean quizOnePage = qSession.getAttribute("pendingQuizOnePage") != null && (Boolean) qSession.getAttribute("pendingQuizOnePage");
+                        boolean quizImmediateCorrection = qSession.getAttribute("pendingQuizImmediateCorrection") != null && (Boolean) qSession.getAttribute("pendingQuizImmediateCorrection");
                         model.User quizUser = (model.User) qSession.getAttribute("user");
                         int creatorId = quizUser.getUserId();
                         Quiz quiz = new Quiz(quizTitle, quizDescription, creatorId);
+                        quiz.setRandomOrder(quizRandomOrder);
+                        quiz.setOnePage(quizOnePage);
+                        quiz.setImmediateCorrection(quizImmediateCorrection);
                         quizDAO.createQuiz(quiz);
                         int quizId = quiz.getQuizId();
                         int qOrder = 1;
@@ -159,6 +171,9 @@ public class QuizController extends HttpServlet {
                         qSession.removeAttribute("pendingQuizTitle");
                         qSession.removeAttribute("pendingQuizDescription");
                         qSession.removeAttribute("pendingQuizQuestions");
+                        qSession.removeAttribute("pendingQuizRandomOrder");
+                        qSession.removeAttribute("pendingQuizOnePage");
+                        qSession.removeAttribute("pendingQuizImmediateCorrection");
                         resp.sendRedirect(req.getContextPath() + "/index.jsp");
                     }
                     break;

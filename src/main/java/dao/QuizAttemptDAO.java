@@ -316,6 +316,36 @@ public class QuizAttemptDAO {
     }
     
     /**
+     * Get top scores for a quiz in the last day
+     * @param quizId The quiz ID
+     * @param limit Maximum number of results
+     * @param practiceOnly Whether to include only practice attempts
+     * @return List of top quiz attempts in the last day
+     * @throws SQLException If database error occurs
+     */
+    public List<QuizAttempt> getTopScoresForQuizInLastDay(int quizId, int limit, boolean practiceOnly) throws SQLException {
+        String sql = "SELECT id, user_id, quiz_id, score, total_questions, time_taken, date_taken, is_practice " +
+                     "FROM quiz_attempts WHERE quiz_id = ? AND date_taken >= DATE_SUB(NOW(), INTERVAL 1 DAY) ";
+        if (practiceOnly) {
+            sql += " AND is_practice = TRUE";
+        } else {
+            sql += " AND is_practice = FALSE";
+        }
+        sql += " ORDER BY score DESC, time_taken ASC LIMIT ?";
+        List<QuizAttempt> attempts = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, quizId);
+            stmt.setInt(2, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    attempts.add(mapRowToQuizAttempt(rs));
+                }
+            }
+        }
+        return attempts;
+    }
+    
+    /**
      * Get recent attempts in the last N days
      * @param days Number of days to look back
      * @param limit Maximum number of attempts to return
@@ -748,6 +778,35 @@ public class QuizAttemptDAO {
         return null;
     }
     
+    /**
+     * Get leaderboard data: for each quiz, the best score per user (one entry per user per quiz)
+     * @return List of LeaderboardEntry objects
+     * @throws SQLException If database error occurs
+     */
+    public List<model.LeaderboardEntry> getLeaderboardData() throws SQLException {
+        String sql = "SELECT q.id AS quiz_id, q.title AS quiz_title, u.id AS user_id, u.username, MAX(qa.score) AS best_score " +
+                "FROM quiz_attempts qa " +
+                "JOIN users u ON qa.user_id = u.id " +
+                "JOIN quizzes q ON qa.quiz_id = q.id " +
+                "WHERE qa.is_practice = FALSE " +
+                "GROUP BY q.id, u.id, q.title, u.username " +
+                "ORDER BY best_score DESC";
+        List<model.LeaderboardEntry> leaderboard = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int quizId = rs.getInt("quiz_id");
+                    String quizTitle = rs.getString("quiz_title");
+                    int userId = rs.getInt("user_id");
+                    String username = rs.getString("username");
+                    double bestScore = rs.getDouble("best_score");
+                    leaderboard.add(new model.LeaderboardEntry(quizId, quizTitle, userId, username, bestScore, 0, null));
+                }
+            }
+        }
+        return leaderboard;
+    }
+
     // ========================= HELPER METHODS =========================
     
     /**
