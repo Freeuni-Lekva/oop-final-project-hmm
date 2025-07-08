@@ -17,6 +17,11 @@
 <body>
 <h2>${quiz.title}</h2>
 <p>${quiz.description}</p>
+
+<!-- Quiz Summary/Rankings Button -->
+<a href="${pageContext.request.contextPath}/quiz-summery?quizId=${quiz.quizId}">View Quiz Rankings & Summary</a>
+<br/><br/>
+
 <form action="${pageContext.request.contextPath}/takeQuiz" method="get">
     <input type="hidden" name="id" value="${quiz.quizId}" />
     <label><input type="checkbox" name="practiceMode" value="true"> Practice Mode</label><br/>
