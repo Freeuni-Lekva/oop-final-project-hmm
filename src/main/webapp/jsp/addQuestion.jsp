@@ -55,6 +55,7 @@
             <option value="multiple-choice">Multiple Choice</option>
             <option value="fill-in-blank">Fill in the Blank</option>
             <option value="picture-response">Picture Response</option>
+            <option value="question-response">Question Response</option>
         </select>
 
         <label for="questionText">Question Text:</label>
@@ -80,8 +81,9 @@
             <input type="text" id="imageUrl" name="imageUrl" placeholder="http://...">
         </div>
 
-        <label for="correctAnswer">Correct Answer:</label>
+        <label for="correctAnswer">Correct Answer(s):</label>
         <input type="text" id="correctAnswer" name="correctAnswer" required>
+        <small>For multiple correct answers, separate them with a comma (e.g., "George Washington, Washington")</small>
 
         <button type="submit" name="addAnother">Add Another Question</button>
         <button type="submit">Finish Quiz</button>

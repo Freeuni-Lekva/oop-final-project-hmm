@@ -104,7 +104,16 @@ public class QuizTakingController extends HttpServlet {
             // Quiz finished: grade and show result
             int correct = 0;
             for (int i = 0; i < questions.size(); i++) {
-                if (questions.get(i).getCorrectAnswer().trim().equalsIgnoreCase(userAnswers.get(i).trim())) {
+                String[] correctAnswers = questions.get(i).getCorrectAnswer().split(",");
+                String userAnswer = userAnswers.get(i).trim();
+                boolean isCorrect = false;
+                for (String ca : correctAnswers) {
+                    if (userAnswer.equalsIgnoreCase(ca.trim())) {
+                        isCorrect = true;
+                        break;
+                    }
+                }
+                if (isCorrect) {
                     correct++;
                 }
             }
