@@ -65,11 +65,18 @@ public class QuizTakingController extends HttpServlet {
             session.setAttribute("userAnswers", new ArrayList<String>());
             session.setAttribute("quizStartTime", System.currentTimeMillis());
             session.setAttribute("practiceMode", practiceMode);
-            req.setAttribute("question", questions.get(0));
-            req.setAttribute("questionNumber", 1);
-            req.setAttribute("totalQuestions", questions.size());
-            req.setAttribute("practiceMode", practiceMode);
-            req.getRequestDispatcher("/jsp/quizQuestion.jsp").forward(req, resp);
+            // Branch: one page or multi-page
+            if (quiz.isOnePage()) {
+                req.setAttribute("questions", questions);
+                req.setAttribute("practiceMode", practiceMode);
+                req.getRequestDispatcher("/jsp/quizAllQuestions.jsp").forward(req, resp);
+            } else {
+                req.setAttribute("question", questions.get(0));
+                req.setAttribute("questionNumber", 1);
+                req.setAttribute("totalQuestions", questions.size());
+                req.setAttribute("practiceMode", practiceMode);
+                req.getRequestDispatcher("/jsp/quizQuestion.jsp").forward(req, resp);
+            }
         } catch (SQLException e) {
             throw new ServletException(e);
         }
@@ -83,10 +90,172 @@ public class QuizTakingController extends HttpServlet {
         Integer currentIndex = (Integer) session.getAttribute("currentQuestionIndex");
         ArrayList<String> userAnswers = (ArrayList<String>) session.getAttribute("userAnswers");
         Boolean practiceMode = (Boolean) session.getAttribute("practiceMode");
-        if (quiz == null || questions == null || currentIndex == null || userAnswers == null) {
+        String allAtOnce = req.getParameter("allAtOnce");
+        if (quiz == null || questions == null) {
             resp.sendRedirect(req.getContextPath() + "/index.jsp");
             return;
         }
+        // All-at-once mode
+        if ("true".equals(allAtOnce)) {
+            int correct = 0;
+            ArrayList<String> allAnswers = new ArrayList<>();
+            for (int i = 0; i < questions.size(); i++) {
+                String answer = req.getParameter("answer" + i);
+                allAnswers.add(answer != null ? answer : "");
+                String[] correctAnswers = questions.get(i).getCorrectAnswer().split(",");
+                boolean isCorrect = false;
+                if (answer != null) {
+                    for (String ca : correctAnswers) {
+                        if (answer.trim().equalsIgnoreCase(ca.trim())) {
+                            isCorrect = true;
+                            break;
+                        }
+                    }
+                }
+                if (isCorrect) correct++;
+            }
+            double score = (double) correct / questions.size() * 100.0;
+            long startTime = (long) session.getAttribute("quizStartTime");
+            long timeTaken = (System.currentTimeMillis() - startTime) / 1000;
+            // Save attempt if user is logged in
+            User user = (User) session.getAttribute("user");
+            if (user != null) {
+                try {
+                    if (practiceMode != null && practiceMode) {
+                        quizAttemptDAO.createPracticeAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                    } else {
+                        quizAttemptDAO.createSimpleAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                    }
+                } catch (SQLException e) {
+                    throw new ServletException(e);
+                }
+            }
+            req.setAttribute("score", score);
+            req.setAttribute("correct", correct);
+            req.setAttribute("totalQuestions", questions.size());
+            req.setAttribute("timeTaken", timeTaken);
+            req.setAttribute("practiceMode", practiceMode);
+            // Clean up session
+            session.removeAttribute("currentQuiz");
+            session.removeAttribute("quizQuestions");
+            session.removeAttribute("currentQuestionIndex");
+            session.removeAttribute("userAnswers");
+            session.removeAttribute("quizStartTime");
+            session.removeAttribute("practiceMode");
+            req.getRequestDispatcher("/jsp/quizResult.jsp").forward(req, resp);
+            return;
+        }
+        // Multi-page, immediate correction logic
+        if (quiz != null && quiz.isImmediateCorrection()) {
+            String action = req.getParameter("action");
+            String feedbackState = req.getParameter("feedbackState");
+            if (action != null && "submit".equals(action) && (feedbackState == null || !"shown".equals(feedbackState))) {
+                // Show feedback for current question
+                if (currentIndex == null) currentIndex = 0;
+                String answer = req.getParameter("answer");
+                if (userAnswers == null) userAnswers = new ArrayList<>();
+                // Store the answer for this question (replace if already present)
+                if (userAnswers.size() > currentIndex) {
+                    userAnswers.set(currentIndex, answer != null ? answer : "");
+                } else {
+                    userAnswers.add(answer != null ? answer : "");
+                }
+                Question currentQuestion = questions.get(currentIndex);
+                String[] correctAnswers = currentQuestion.getCorrectAnswer().split(",");
+                boolean isCorrect = false;
+                if (answer != null) {
+                    for (String ca : correctAnswers) {
+                        if (answer.trim().equalsIgnoreCase(ca.trim())) {
+                            isCorrect = true;
+                            break;
+                        }
+                    }
+                }
+                req.setAttribute("question", currentQuestion);
+                req.setAttribute("questionNumber", currentIndex + 1);
+                req.setAttribute("totalQuestions", questions.size());
+                req.setAttribute("practiceMode", practiceMode);
+                req.setAttribute("submittedAnswer", answer);
+                req.setAttribute("feedback", isCorrect ? "Correct" : "Incorrect");
+                if (!isCorrect) req.setAttribute("correctAnswer", currentQuestion.getCorrectAnswer());
+                // Mark that feedback has been shown for this question
+                session.setAttribute("feedbackShown", true);
+                req.getRequestDispatcher("/jsp/quizQuestion.jsp").forward(req, resp);
+                return;
+            } else if (action != null && ("next".equals(action) || ("submit".equals(action) && "shown".equals(feedbackState)))) {
+                // Move to next question
+                session.setAttribute("feedbackShown", false);
+                currentIndex = (currentIndex == null) ? 0 : currentIndex + 1;
+                if (currentIndex < questions.size()) {
+                    session.setAttribute("currentQuestionIndex", currentIndex);
+                    session.setAttribute("userAnswers", userAnswers);
+                    req.setAttribute("question", questions.get(currentIndex));
+                    req.setAttribute("questionNumber", currentIndex + 1);
+                    req.setAttribute("totalQuestions", questions.size());
+                    req.setAttribute("practiceMode", practiceMode);
+                    req.getRequestDispatcher("/jsp/quizQuestion.jsp").forward(req, resp);
+                    return;
+                } else {
+                    // Quiz finished: grade and show result
+                    int correct = 0;
+                    for (int i = 0; i < questions.size(); i++) {
+                        String[] correctAnswers = questions.get(i).getCorrectAnswer().split(",");
+                        String userAnswer = userAnswers.get(i).trim();
+                        boolean isCorrect = false;
+                        for (String ca : correctAnswers) {
+                            if (userAnswer.equalsIgnoreCase(ca.trim())) {
+                                isCorrect = true;
+                                break;
+                            }
+                        }
+                        if (isCorrect) correct++;
+                    }
+                    double score = (double) correct / questions.size() * 100.0;
+                    long startTime = (long) session.getAttribute("quizStartTime");
+                    long timeTaken = (System.currentTimeMillis() - startTime) / 1000;
+                    // Save attempt if user is logged in
+                    User user = (User) session.getAttribute("user");
+                    if (user != null) {
+                        try {
+                            if (practiceMode != null && practiceMode) {
+                                quizAttemptDAO.createPracticeAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                            } else {
+                                quizAttemptDAO.createSimpleAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                            }
+                        } catch (SQLException e) {
+                            throw new ServletException(e);
+                        }
+                    }
+                    req.setAttribute("score", score);
+                    req.setAttribute("correct", correct);
+                    req.setAttribute("totalQuestions", questions.size());
+                    req.setAttribute("timeTaken", timeTaken);
+                    req.setAttribute("practiceMode", practiceMode);
+                    // Clean up session
+                    session.removeAttribute("currentQuiz");
+                    session.removeAttribute("quizQuestions");
+                    session.removeAttribute("currentQuestionIndex");
+                    session.removeAttribute("userAnswers");
+                    session.removeAttribute("quizStartTime");
+                    session.removeAttribute("practiceMode");
+                    session.removeAttribute("feedbackShown");
+                    req.getRequestDispatcher("/jsp/quizResult.jsp").forward(req, resp);
+                    return;
+                }
+            } else {
+                // If action is not recognized, just reload current question with no feedback, do not advance
+                if (currentIndex == null) currentIndex = 0;
+                Question currentQuestion = questions.get(currentIndex);
+                req.setAttribute("question", currentQuestion);
+                req.setAttribute("questionNumber", currentIndex + 1);
+                req.setAttribute("totalQuestions", questions.size());
+                req.setAttribute("practiceMode", practiceMode);
+                req.setAttribute("submittedAnswer", (userAnswers != null && userAnswers.size() > currentIndex) ? userAnswers.get(currentIndex) : "");
+                req.getRequestDispatcher("/jsp/quizQuestion.jsp").forward(req, resp);
+                return;
+            }
+        }
+        // Fallback logic for non-immediate-correction quizzes only
         // Get submitted answer
         String answer = req.getParameter("answer");
         userAnswers.add(answer != null ? answer : "");
