@@ -86,8 +86,33 @@ public class FriendshipController extends HttpServlet {
         List<Friendship> friends = friendshipDAO.getFriends(user.getUserId());
         List<Friendship> pendingRequests = friendshipDAO.getPendingFriendRequests(user.getUserId());
         
+        // Create maps for usernames to display in JSP
+        java.util.Map<Integer, String> usernames = new java.util.HashMap<>();
+        
+        // Collect all user IDs we need usernames for
+        java.util.Set<Integer> userIds = new java.util.HashSet<>();
+        for (Friendship friendship : friends) {
+            userIds.add(friendship.getRequesterId());
+            userIds.add(friendship.getReceiverId());
+        }
+        for (Friendship friendship : pendingRequests) {
+            userIds.add(friendship.getRequesterId());
+            userIds.add(friendship.getReceiverId());
+        }
+        
+        // Fetch usernames for all collected user IDs
+        for (Integer userId : userIds) {
+            if (userId != user.getUserId()) { // Don't need current user's username
+                User friendUser = userDAO.findById(userId);
+                if (friendUser != null) {
+                    usernames.put(userId, friendUser.getUsername());
+                }
+            }
+        }
+        
         req.setAttribute("friends", friends);
         req.setAttribute("pendingRequests", pendingRequests);
+        req.setAttribute("usernames", usernames);
         req.getRequestDispatcher("/jsp/friends.jsp").forward(req, resp);
     }
     
@@ -115,17 +140,25 @@ public class FriendshipController extends HttpServlet {
             return;
         }
         
-        if (friendshipDAO.friendshipExists(user.getUserId(), friend.getUserId())) {
-            req.setAttribute("error", "Friendship already exists with this user");
-            handleViewFriends(req, resp, user);
-            return;
-        }
-        
-        Friendship friendship = friendshipDAO.sendFriendRequest(user.getUserId(), friend.getUserId());
-        if (friendship != null) {
-            req.setAttribute("success", "Friend request sent successfully");
-        } else {
-            req.setAttribute("error", "Failed to send friend request");
+        try {
+            Friendship friendship = friendshipDAO.sendFriendRequest(user.getUserId(), friend.getUserId());
+            if (friendship != null) {
+                req.setAttribute("success", "Friend request sent successfully");
+            } else {
+                req.setAttribute("error", "Failed to send friend request");
+            }
+        } catch (SQLException e) {
+            // Handle specific business logic errors from DAO
+            String errorMessage = e.getMessage();
+            if (errorMessage.contains("already friends")) {
+                req.setAttribute("error", "You are already friends with " + friend.getUsername());
+            } else if (errorMessage.contains("already sent")) {
+                req.setAttribute("error", "You have already sent a friend request to " + friend.getUsername() + ". Please wait for their response.");
+            } else if (errorMessage.contains("already received")) {
+                req.setAttribute("error", friend.getUsername() + " has already sent you a friend request. Please check your pending requests above to respond.");
+            } else {
+                req.setAttribute("error", "Failed to send friend request: " + errorMessage);
+            }
         }
         
         handleViewFriends(req, resp, user);
