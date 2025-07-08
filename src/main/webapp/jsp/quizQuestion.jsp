@@ -27,7 +27,16 @@
     <img src="<%= question.getImageUrl() %>" alt="Question Image" style="max-width:400px; max-height:300px;"/>
 <% } %>
 <form action="${pageContext.request.contextPath}/takeQuiz" method="post">
+<% if ("multiple-choice".equals(question.getQuestionType()) && question.getChoices() != null) { %>
+    <% for (String choice : question.getChoices()) { %>
+        <label>
+            <input type="radio" name="answer" value="<%= choice %>" required>
+            <%= choice %>
+        </label><br/>
+    <% } %>
+<% } else { %>
     <input type="text" name="answer" required />
+<% } %>
     <button type="submit"><%= (questionNumber == totalQuestions) ? "Finish Quiz" : "Next" %></button>
 </form>
 </body>
