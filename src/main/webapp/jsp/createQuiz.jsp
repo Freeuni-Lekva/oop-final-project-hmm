@@ -34,6 +34,8 @@
         <label for="description">Description:</label>
         <textarea id="description" name="description" rows="4" maxlength="500" placeholder="Enter a short description (optional)"></textarea>
 
+        <label><input type="checkbox" id="randomOrder" name="randomOrder" value="true"> Randomize question order</label>
+
         <button type="submit">Create Quiz</button>
     </form>
     <c:if test="${not empty error}">
