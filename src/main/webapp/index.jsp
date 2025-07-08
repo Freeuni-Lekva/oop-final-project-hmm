@@ -24,9 +24,19 @@
 <html>
 <head>
     <title>Quiz Website - Home</title>
+    <style>
+        .leaderboard-btn {
+            float: right;
+            margin-top: -40px;
+            margin-right: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Welcome to the Quiz Website!</h1>
+    <a href="${pageContext.request.contextPath}/leaderboard" class="leaderboard-btn">
+        <button>Leaderboard</button>
+    </a>
     <h2>All Quizzes</h2>
     <ul>
     <% if (quizzes != null && !quizzes.isEmpty()) { 
