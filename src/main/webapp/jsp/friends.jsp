@@ -138,6 +138,10 @@
                                                          <div class="action-buttons">
                                  <c:set var="friendId" value="${friend.requesterId == sessionScope.user.userId ? friend.receiverId : friend.requesterId}" />
                                  <a href="${pageContext.request.contextPath}/messages?friendUsername=${usernames[friendId]}" class="btn btn-send">Send Message</a>
+                                 <form action="${pageContext.request.contextPath}/friends/remove" method="post" style="display:inline; margin-left:8px;">
+                                     <input type="hidden" name="friendId" value="${friendId}" />
+                                     <button type="submit" class="btn btn-decline" onclick="return confirm('Are you sure you want to remove this friend?');">Remove Friend</button>
+                                 </form>
                              </div>
                         </div>
                     </c:forEach>
