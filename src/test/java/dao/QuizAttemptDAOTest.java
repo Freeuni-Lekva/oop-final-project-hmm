@@ -72,8 +72,8 @@ class QuizAttemptDAOTest {
 
     private static void cleanUpTestAttempts() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
-            // Delete ALL quiz attempts from test users/quizzes to ensure clean state
-            stmt.executeUpdate("DELETE FROM quiz_attempts WHERE user_id IN (1, 2) OR quiz_id IN (1, 2)");
+            // Delete ALL quiz attempts to ensure clean state
+            stmt.executeUpdate("DELETE FROM quiz_attempts");
         }
     }
 
@@ -288,7 +288,7 @@ class QuizAttemptDAOTest {
         // Arrange
         quizAttemptDAO.createSimpleAttempt(TEST_USER_ID, TEST_QUIZ_ID, 80.0, 10, 250);
         quizAttemptDAO.createPracticeAttempt(TEST_USER_ID, TEST_QUIZ_ID_2, 85.0, 8, 240);
-        quizAttemptDAO.createPracticeAttempt(TEST_USER_ID_2, TEST_QUIZ_ID, 90.0, 10, 200);
+        quizAttemptDAO.createPracticeAttempt(TEST_USER_ID, TEST_QUIZ_ID, 90.0, 10, 200);
 
         // Act
         List<QuizAttempt> practiceAttempts = quizAttemptDAO.getPracticeAttempts();
@@ -674,5 +674,44 @@ class QuizAttemptDAOTest {
 
         double quizAverage = quizAttemptDAO.getQuizAverageScore(TEST_QUIZ_ID, false);
         assertTrue(quizAverage > 0, "Quiz average score should be positive");
+    }
+
+    @Test
+    @Order(32)
+    @DisplayName("Test get leaderboard data (best score per user per quiz)")
+    void testGetLeaderboardData() throws SQLException {
+        // Clean up before test
+        cleanUpTestAttempts();
+
+        // Arrange: user 1 takes quiz 1 twice, user 2 takes quiz 1 once, user 1 takes quiz 2 once
+        quizAttemptDAO.createSimpleAttempt(TEST_USER_ID, TEST_QUIZ_ID, 60.0, 10, 200);
+        quizAttemptDAO.createSimpleAttempt(TEST_USER_ID, TEST_QUIZ_ID, 95.0, 10, 180); // best for user 1, quiz 1
+        quizAttemptDAO.createSimpleAttempt(TEST_USER_ID_2, TEST_QUIZ_ID, 88.0, 10, 210); // best for user 2, quiz 1
+        quizAttemptDAO.createSimpleAttempt(TEST_USER_ID, TEST_QUIZ_ID_2, 77.0, 10, 190); // best for user 1, quiz 2
+
+        // Act
+        List<model.LeaderboardEntry> leaderboard = quizAttemptDAO.getLeaderboardData();
+
+        // Assert
+        // Should have 3 entries: (user1,quiz1), (user2,quiz1), (user1,quiz2)
+        assertEquals(3, leaderboard.size(), "Should return one entry per user per quiz");
+        boolean foundUser1Quiz1 = false, foundUser2Quiz1 = false, foundUser1Quiz2 = false;
+        for (model.LeaderboardEntry entry : leaderboard) {
+            if (entry.getQuizId() == TEST_QUIZ_ID && entry.getUserId() == TEST_USER_ID) {
+                foundUser1Quiz1 = true;
+                assertEquals(95.0, entry.getBestScore(), 0.01);
+            }
+            if (entry.getQuizId() == TEST_QUIZ_ID && entry.getUserId() == TEST_USER_ID_2) {
+                foundUser2Quiz1 = true;
+                assertEquals(88.0, entry.getBestScore(), 0.01);
+            }
+            if (entry.getQuizId() == TEST_QUIZ_ID_2 && entry.getUserId() == TEST_USER_ID) {
+                foundUser1Quiz2 = true;
+                assertEquals(77.0, entry.getBestScore(), 0.01);
+            }
+        }
+        assertTrue(foundUser1Quiz1, "User 1, Quiz 1 should be present");
+        assertTrue(foundUser2Quiz1, "User 2, Quiz 1 should be present");
+        assertTrue(foundUser1Quiz2, "User 1, Quiz 2 should be present");
     }
 } 

@@ -748,6 +748,35 @@ public class QuizAttemptDAO {
         return null;
     }
     
+    /**
+     * Get leaderboard data: for each quiz, the best score per user (one entry per user per quiz)
+     * @return List of LeaderboardEntry objects
+     * @throws SQLException If database error occurs
+     */
+    public List<model.LeaderboardEntry> getLeaderboardData() throws SQLException {
+        String sql = "SELECT q.id AS quiz_id, q.title AS quiz_title, u.id AS user_id, u.username, MAX(qa.score) AS best_score " +
+                "FROM quiz_attempts qa " +
+                "JOIN users u ON qa.user_id = u.id " +
+                "JOIN quizzes q ON qa.quiz_id = q.id " +
+                "WHERE qa.is_practice = FALSE " +
+                "GROUP BY q.id, u.id, q.title, u.username " +
+                "ORDER BY best_score DESC";
+        List<model.LeaderboardEntry> leaderboard = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    int quizId = rs.getInt("quiz_id");
+                    String quizTitle = rs.getString("quiz_title");
+                    int userId = rs.getInt("user_id");
+                    String username = rs.getString("username");
+                    double bestScore = rs.getDouble("best_score");
+                    leaderboard.add(new model.LeaderboardEntry(quizId, quizTitle, userId, username, bestScore));
+                }
+            }
+        }
+        return leaderboard;
+    }
+
     // ========================= HELPER METHODS =========================
     
     /**
