@@ -97,6 +97,7 @@ public class QuizController extends HttpServlet {
                     }
                     String title = req.getParameter("title");
                     String description = req.getParameter("description");
+                    boolean randomOrder = "true".equals(req.getParameter("randomOrder"));
                     HttpSession session = req.getSession(false);
                     model.User user = (model.User) session.getAttribute("user");
                     if (user == null) {
@@ -106,6 +107,7 @@ public class QuizController extends HttpServlet {
                     // Store quiz info in session, not DB
                     session.setAttribute("pendingQuizTitle", title);
                     session.setAttribute("pendingQuizDescription", description);
+                    session.setAttribute("pendingQuizRandomOrder", randomOrder);
                     session.setAttribute("pendingQuizQuestions", new ArrayList<Question>());
                     resp.sendRedirect(req.getContextPath() + "/quiz/addQuestion");
                     break;
@@ -144,9 +146,11 @@ public class QuizController extends HttpServlet {
                         // On finish: save quiz and questions to DB
                         String quizTitle = (String) qSession.getAttribute("pendingQuizTitle");
                         String quizDescription = (String) qSession.getAttribute("pendingQuizDescription");
+                        boolean quizRandomOrder = qSession.getAttribute("pendingQuizRandomOrder") != null && (Boolean) qSession.getAttribute("pendingQuizRandomOrder");
                         model.User quizUser = (model.User) qSession.getAttribute("user");
                         int creatorId = quizUser.getUserId();
                         Quiz quiz = new Quiz(quizTitle, quizDescription, creatorId);
+                        quiz.setRandomOrder(quizRandomOrder);
                         quizDAO.createQuiz(quiz);
                         int quizId = quiz.getQuizId();
                         int qOrder = 1;
@@ -159,6 +163,7 @@ public class QuizController extends HttpServlet {
                         qSession.removeAttribute("pendingQuizTitle");
                         qSession.removeAttribute("pendingQuizDescription");
                         qSession.removeAttribute("pendingQuizQuestions");
+                        qSession.removeAttribute("pendingQuizRandomOrder");
                         resp.sendRedirect(req.getContextPath() + "/index.jsp");
                     }
                     break;
