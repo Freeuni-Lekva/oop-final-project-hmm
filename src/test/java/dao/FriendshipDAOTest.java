@@ -133,8 +133,8 @@ class FriendshipDAOTest {
         SQLException exception = assertThrows(SQLException.class, () -> {
             friendshipDAO.sendFriendRequest(TEST_REQUESTER_ID, TEST_RECEIVER_ID);
         });
-        
-        assertTrue(exception.getMessage().contains("Friendship already exists"));
+
+        assertEquals("Users are already friends", exception.getMessage());
     }
 
     @Test
