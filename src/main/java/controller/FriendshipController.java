@@ -2,6 +2,7 @@ package controller;
 
 import dao.FriendshipDAO;
 import dao.UserDAO;
+import dao.MessageDAO;
 import model.Friendship;
 import model.User;
 import jakarta.servlet.ServletException;
@@ -14,17 +15,19 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/friends", "/friends/request", "/friends/accept", "/friends/decline"})
+@WebServlet(urlPatterns = {"/friends", "/friends/request", "/friends/accept", "/friends/decline", "/friends/remove"})
 public class FriendshipController extends HttpServlet {
     
     private FriendshipDAO friendshipDAO;
     private UserDAO userDAO;
+    private MessageDAO messageDAO;
     
     @Override
     public void init() throws ServletException {
         try {
             friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
+            messageDAO = (MessageDAO) getServletContext().getAttribute("messageDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
@@ -71,6 +74,9 @@ public class FriendshipController extends HttpServlet {
                     break;
                 case "/friends/decline":
                     handleDeclineFriendRequest(req, resp, currentUser);
+                    break;
+                case "/friends/remove":
+                    handleRemoveFriend(req, resp, currentUser);
                     break;
                 default:
                     resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -143,6 +149,10 @@ public class FriendshipController extends HttpServlet {
         try {
             Friendship friendship = friendshipDAO.sendFriendRequest(user.getUserId(), friend.getUserId());
             if (friendship != null) {
+                // Also create a friend request message so it appears in Messages
+                if (messageDAO != null) {
+                    messageDAO.sendFriendRequest(user.getUserId(), friend.getUserId(), "");
+                }
                 req.setAttribute("success", "Friend request sent successfully");
             } else {
                 req.setAttribute("error", "Failed to send friend request");
@@ -223,6 +233,27 @@ public class FriendshipController extends HttpServlet {
             req.setAttribute("error", "Invalid friend request");
         }
         
+        handleViewFriends(req, resp, user);
+    }
+    
+    private void handleRemoveFriend(HttpServletRequest req, HttpServletResponse resp, User user)
+            throws SQLException, ServletException, IOException {
+        String friendIdParam = req.getParameter("friendId");
+        if (friendIdParam == null) {
+            resp.sendRedirect(req.getContextPath() + "/friends");
+            return;
+        }
+        try {
+            int friendId = Integer.parseInt(friendIdParam);
+            boolean removed = friendshipDAO.removeFriendship(user.getUserId(), friendId);
+            if (removed) {
+                req.setAttribute("success", "Friend removed successfully.");
+            } else {
+                req.setAttribute("error", "Failed to remove friend.");
+            }
+        } catch (NumberFormatException e) {
+            req.setAttribute("error", "Invalid friend ID.");
+        }
         handleViewFriends(req, resp, user);
     }
     
