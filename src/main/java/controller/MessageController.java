@@ -3,6 +3,7 @@ package controller;
 import dao.MessageDAO;
 import dao.UserDAO;
 import dao.FriendshipDAO;
+import dao.QuizDAO;
 import model.Message;
 import model.User;
 import jakarta.servlet.ServletException;
@@ -20,6 +21,7 @@ import java.util.List;
     private MessageDAO messageDAO;
     private UserDAO userDAO;
     private FriendshipDAO friendshipDAO;
+    private QuizDAO quizDAO;
 
     @Override
     public void init() throws ServletException {
@@ -27,6 +29,7 @@ import java.util.List;
             messageDAO = (MessageDAO) getServletContext().getAttribute("messageDAO");
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
             friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
+            quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
@@ -83,6 +86,15 @@ import java.util.List;
         
         List<Message> messages = messageDAO.getReceivedMessages(user.getUserId());
         req.setAttribute("messages", messages);
+        // After getting messages, set quizName for challenge messages
+        for (Message msg : messages) {
+            if (Message.TYPE_CHALLENGE.equals(msg.getMessageType()) && msg.getQuizId() != null) {
+                model.Quiz quiz = quizDAO.findById(msg.getQuizId());
+                if (quiz != null) {
+                    msg.setQuizName(quiz.getTitle());
+                }
+            }
+        }
         req.getRequestDispatcher("/jsp/messages.jsp").forward(req, resp);
     }
     
@@ -153,16 +165,22 @@ import java.util.List;
                 handled = true;
                 break;
             case Message.TYPE_CHALLENGE:
-                if (quizIdParam != null) {
-                    int quizId = Integer.parseInt(quizIdParam);
-                    message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), content, quizId);
-                    if (message != null) {
-                        req.setAttribute("success", "Challenge sent successfully");
+                String quizNameParam = req.getParameter("quizName");
+                if (quizNameParam != null && !quizNameParam.trim().isEmpty()) {
+                    model.Quiz quiz = quizDAO.findByTitle(quizNameParam.trim());
+                    if (quiz == null) {
+                        req.setAttribute("error", "Quiz not found with that name");
                     } else {
-                        req.setAttribute("error", "Failed to send challenge");
+                        message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), content, quiz.getQuizId());
+                        if (message != null) {
+                            message.setQuizName(quiz.getTitle());
+                            req.setAttribute("success", "Challenge sent successfully");
+                        } else {
+                            req.setAttribute("error", "Failed to send challenge");
+                        }
                     }
                 } else {
-                    req.setAttribute("error", "Quiz ID is required for a challenge");
+                    req.setAttribute("error", "Quiz name is required for a challenge");
                 }
                 handled = true;
                 break;
