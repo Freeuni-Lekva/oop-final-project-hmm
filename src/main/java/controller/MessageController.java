@@ -2,6 +2,7 @@ package controller;
 
 import dao.MessageDAO;
 import dao.UserDAO;
+import dao.FriendshipDAO;
 import model.Message;
 import model.User;
 import jakarta.servlet.ServletException;
@@ -14,17 +15,18 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/messages", "/messages/send"})
-public class MessageController extends HttpServlet {
+@WebServlet(urlPatterns = {"/messages", "/messages/send", "/messages/markRead"})public class MessageController extends HttpServlet {
     
     private MessageDAO messageDAO;
     private UserDAO userDAO;
+    private FriendshipDAO friendshipDAO;
 
     @Override
     public void init() throws ServletException {
         try {
             messageDAO = (MessageDAO) getServletContext().getAttribute("messageDAO");
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
+            friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
@@ -64,6 +66,8 @@ public class MessageController extends HttpServlet {
         try {
             if ("/messages/send".equals(path)) {
                 handleSendMessage(req, resp, currentUser);
+            } else if ("/messages/markRead".equals(path)) {
+                handleMarkAsRead(req, resp, currentUser);
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -100,6 +104,12 @@ public class MessageController extends HttpServlet {
             handleViewMessages(req, resp, user);
             return;
         }
+        // Block sending friend request to yourself immediately
+        if (user.getUserId() == recipient.getUserId() && Message.TYPE_FRIEND_REQUEST.equals(messageType)) {
+            req.setAttribute("error", "You cannot send a friend request to yourself.");
+            handleViewMessages(req, resp, user);
+            return;
+        }
         
         Message message = null;
         boolean handled = false;
@@ -115,9 +125,12 @@ public class MessageController extends HttpServlet {
                 handled = true;
                 break;
             case Message.TYPE_FRIEND_REQUEST:
-                // Check if a pending friend request already exists
-                if (messageDAO.hasPendingFriendRequest(user.getUserId(), recipient.getUserId())) {
-                    req.setAttribute("error", "Friend request already sent or pending.");
+                // Use FriendshipDAO for robust checks
+                if (friendshipDAO.areFriends(user.getUserId(), recipient.getUserId())) {
+                    req.setAttribute("error", "You are already friends with this user.");
+                } else if (friendshipDAO.hasPendingRequest(user.getUserId(), recipient.getUserId()) ||
+                           friendshipDAO.hasPendingRequest(recipient.getUserId(), user.getUserId())) {
+                    req.setAttribute("error", "A friend request is already pending between you and this user.");
                 } else {
                     message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
                     if (message != null) {
@@ -149,6 +162,16 @@ public class MessageController extends HttpServlet {
         }
         
         handleViewMessages(req, resp, user);
+    }
+    
+    private void handleMarkAsRead(HttpServletRequest req, HttpServletResponse resp, User user)
+            throws SQLException, ServletException, IOException {
+        String messageIdParam = req.getParameter("messageId");
+        if (messageIdParam != null) {
+            int messageId = Integer.parseInt(messageIdParam);
+            messageDAO.markAsRead(messageId);
+        }
+        resp.sendRedirect(req.getContextPath() + "/messages");
     }
     
     private User getCurrentUser(HttpServletRequest req) {
