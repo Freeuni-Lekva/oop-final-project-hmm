@@ -239,6 +239,9 @@ class QuestionDAOTest {
     @Order(9)
     @DisplayName("Test get questions by type")
     void testGetQuestionsByType_Success() throws SQLException {
+        // Clean up any existing questions for the test quizzes
+        questionDAO.deleteQuestionsByQuizId(TEST_QUIZ_ID);
+        questionDAO.deleteQuestionsByQuizId(TEST_QUIZ_ID_2);
         // Arrange
         questionDAO.createSimpleQuestion(TEST_QUIZ_ID, Question.TYPE_QUESTION_RESPONSE, 
             "Test question 1", "Answer 1", 1);
