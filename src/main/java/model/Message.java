@@ -16,6 +16,7 @@ public class Message {
     private Integer quizId;      // Only for challenge messages
     private Date dateSent;
     private boolean isRead;
+    private String senderUsername;
     
     // Message type constants
     public static final String TYPE_FRIEND_REQUEST = "friend_request";
@@ -123,6 +124,14 @@ public class Message {
     
     public void setRead(boolean read) {
         isRead = read;
+    }
+    
+    public String getSenderUsername() {
+        return senderUsername;
+    }
+
+    public void setSenderUsername(String senderUsername) {
+        this.senderUsername = senderUsername;
     }
     
     // Helper methods
