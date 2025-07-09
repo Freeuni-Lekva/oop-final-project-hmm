@@ -7,6 +7,7 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.Quiz" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
     Quiz quiz = (Quiz) request.getAttribute("quiz");
 %>
@@ -20,6 +21,10 @@
 
 <!-- Quiz Summary/Rankings Button -->
 <a href="${pageContext.request.contextPath}/quiz-summery?quizId=${quiz.quizId}">View Quiz Rankings & Summary</a>
+<c:if test="${not empty sessionScope.user}">
+    &nbsp;|&nbsp;
+    <a href="${pageContext.request.contextPath}/quizHistory?quizId=${quiz.quizId}">History</a>
+</c:if>
 <br/><br/>
 
 <form action="${pageContext.request.contextPath}/takeQuiz" method="get">
