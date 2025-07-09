@@ -158,8 +158,8 @@
                 </div>
                 
                 <div class="form-group" id="quizIdField" style="display: none;">
-                    <label for="quizId">Quiz ID (for challenges):</label>
-                    <input type="number" id="quizId" name="quizId" placeholder="Enter quiz ID" />
+                    <label for="quizName">Quiz Name (for challenges):</label>
+                    <input type="text" id="quizName" name="quizName" placeholder="Enter quiz name" />
                 </div>
                 
                 <div class="form-group">
@@ -207,7 +207,7 @@
                             
                             <c:if test="${message.messageType == 'challenge' && message.quizId != null}">
                                 <div class="challenge-info">
-                                    🎯 Quiz Challenge: Quiz ID ${message.quizId}
+                                    🎯 Quiz Challenge: Quiz <b>${message.quizName}</b>
                                     <a href="${pageContext.request.contextPath}/quiz?id=${message.quizId}" class="btn btn-small btn-warning">Take Challenge</a>
                                 </div>
                             </c:if>
