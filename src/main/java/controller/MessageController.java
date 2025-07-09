@@ -102,26 +102,50 @@ public class MessageController extends HttpServlet {
         }
         
         Message message = null;
+        boolean handled = false;
         
         switch (messageType) {
             case Message.TYPE_NOTE:
                 message = messageDAO.sendNote(user.getUserId(), recipient.getUserId(), content);
+                if (message != null) {
+                    req.setAttribute("success", "Message sent successfully");
+                } else {
+                    req.setAttribute("error", "Failed to send message");
+                }
+                handled = true;
                 break;
             case Message.TYPE_FRIEND_REQUEST:
-                message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
+                // Check if a pending friend request already exists
+                if (messageDAO.hasPendingFriendRequest(user.getUserId(), recipient.getUserId())) {
+                    req.setAttribute("error", "Friend request already sent or pending.");
+                } else {
+                    message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
+                    if (message != null) {
+                        req.setAttribute("success", "Friend request sent successfully");
+                    } else {
+                        req.setAttribute("error", "Failed to send friend request");
+                    }
+                }
+                handled = true;
                 break;
             case Message.TYPE_CHALLENGE:
                 if (quizIdParam != null) {
                     int quizId = Integer.parseInt(quizIdParam);
                     message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), content, quizId);
+                    if (message != null) {
+                        req.setAttribute("success", "Challenge sent successfully");
+                    } else {
+                        req.setAttribute("error", "Failed to send challenge");
+                    }
+                } else {
+                    req.setAttribute("error", "Quiz ID is required for a challenge");
                 }
+                handled = true;
                 break;
         }
         
-        if (message != null) {
-            req.setAttribute("success", "Message sent successfully");
-        } else {
-            req.setAttribute("error", "Failed to send message");
+        if (!handled) {
+            req.setAttribute("error", "Invalid message type or failed to send message");
         }
         
         handleViewMessages(req, resp, user);
