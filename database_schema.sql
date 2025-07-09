@@ -114,6 +114,22 @@ CREATE TABLE achievements (
     INDEX idx_achievement_type (achievement_type)
 );
 
+-- Announcements table
+CREATE TABLE announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_by INT NOT NULL,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_created_date (created_date),
+    INDEX idx_is_active (is_active),
+    INDEX idx_priority (priority),
+    INDEX idx_created_by (created_by)
+);
+
 -- Insert sample admin user
 -- Password: shasum gives d033e22ae348aeb5660fc2140aec35850c4da997
 INSERT INTO users (username, password_hash, email, is_admin) VALUES
