@@ -20,7 +20,7 @@ CREATE TABLE users (
 -- Quizzes table
 CREATE TABLE quizzes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
     creator_id INT NOT NULL,
     random_order BOOLEAN DEFAULT FALSE,
