@@ -36,6 +36,8 @@
         .btn-success:hover { background: #218838; }
         .btn-warning { background: #ffc107; color: #212529; }
         .btn-warning:hover { background: #e0a800; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #b52a37; }
         .form-container { padding: 1.5em; border: 1px solid #ddd; border-radius: 8px; background: white; }
         .form-group { margin-bottom: 1em; }
         .form-group label { display: block; margin-bottom: 0.3em; font-weight: bold; color: #333; }
@@ -225,6 +227,10 @@
                                     </form>
                                     <span class="btn btn-small" style="background: #17a2b8; color: white;">New</span>
                                 </c:if>
+                                <form action="${pageContext.request.contextPath}/messages/delete" method="post" style="display:inline;">
+                                    <input type="hidden" name="messageId" value="${message.messageId}" />
+                                    <button type="submit" class="btn btn-small btn-danger" onclick="return confirm('Are you sure you want to delete this message?');">Delete</button>
+                                </form>
                             </div>
                         </div>
                     </c:forEach>
