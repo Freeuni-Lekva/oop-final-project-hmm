@@ -219,6 +219,10 @@
                             <div class="message-actions">
                                 <a href="${pageContext.request.contextPath}/messages?friendUsername=${message.senderUsername}" class="btn btn-small btn-primary">Reply</a>
                                 <c:if test="${!message.read}">
+                                    <form action="${pageContext.request.contextPath}/messages/markRead" method="post" style="display:inline;">
+                                        <input type="hidden" name="messageId" value="${message.messageId}" />
+                                        <button type="submit" class="btn btn-small btn-success">Mark as Read</button>
+                                    </form>
                                     <span class="btn btn-small" style="background: #17a2b8; color: white;">New</span>
                                 </c:if>
                             </div>
