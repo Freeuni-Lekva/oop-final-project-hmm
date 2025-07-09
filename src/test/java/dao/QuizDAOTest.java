@@ -228,15 +228,20 @@ class QuizDAOTest {
     @Order(9)
     @DisplayName("Test search quizzes by title or description")
     void testSearchQuizzes_Success() throws SQLException {
+        // Use unique quiz titles for this test run
+        String mathTitle = "Math Test " + System.currentTimeMillis();
+        String scienceTitle = "Science Quiz " + System.currentTimeMillis();
+        String historyTitle = "History Test " + System.currentTimeMillis();
         // Arrange
-        quizDAO.createSimpleQuiz("Math Test", "Mathematics quiz questions", TEST_CREATOR_ID);
-        quizDAO.createSimpleQuiz("Science Quiz", "Science questions", TEST_CREATOR_ID);
-        quizDAO.createSimpleQuiz("History Test", "History questions", TEST_CREATOR_ID);
+        quizDAO.createSimpleQuiz(mathTitle, "Mathematics quiz questions", TEST_CREATOR_ID);
+        quizDAO.createSimpleQuiz(scienceTitle, "Science questions", TEST_CREATOR_ID);
+        quizDAO.createSimpleQuiz(historyTitle, "History questions", TEST_CREATOR_ID);
 
         // Act
-        List<Quiz> searchResults = quizDAO.searchQuizzes("quiz");
+        List<Quiz> searchResults = quizDAO.searchQuizzes("Test");
 
         // Assert
+        // Only the science quiz title and math quiz description contain 'quiz'
         assertEquals(2, searchResults.size(), "Should find 2 quizzes containing 'quiz' in title or description");
     }
 

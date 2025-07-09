@@ -2,6 +2,8 @@ package controller;
 
 import dao.MessageDAO;
 import dao.UserDAO;
+import dao.FriendshipDAO;
+import dao.QuizDAO;
 import model.Message;
 import model.User;
 import jakarta.servlet.ServletException;
@@ -14,17 +16,20 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/messages", "/messages/send"})
-public class MessageController extends HttpServlet {
+@WebServlet(urlPatterns = {"/messages", "/messages/send", "/messages/markRead", "/messages/delete"})public class MessageController extends HttpServlet {
     
     private MessageDAO messageDAO;
     private UserDAO userDAO;
+    private FriendshipDAO friendshipDAO;
+    private QuizDAO quizDAO;
 
     @Override
     public void init() throws ServletException {
         try {
             messageDAO = (MessageDAO) getServletContext().getAttribute("messageDAO");
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
+            friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
+            quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
@@ -64,6 +69,10 @@ public class MessageController extends HttpServlet {
         try {
             if ("/messages/send".equals(path)) {
                 handleSendMessage(req, resp, currentUser);
+            } else if ("/messages/markRead".equals(path)) {
+                handleMarkAsRead(req, resp, currentUser);
+            } else if ("/messages/delete".equals(path)) {
+                handleDeleteMessage(req, resp, currentUser);
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -77,6 +86,15 @@ public class MessageController extends HttpServlet {
         
         List<Message> messages = messageDAO.getReceivedMessages(user.getUserId());
         req.setAttribute("messages", messages);
+        // After getting messages, set quizName for challenge messages
+        for (Message msg : messages) {
+            if (Message.TYPE_CHALLENGE.equals(msg.getMessageType()) && msg.getQuizId() != null) {
+                model.Quiz quiz = quizDAO.findById(msg.getQuizId());
+                if (quiz != null) {
+                    msg.setQuizName(quiz.getTitle());
+                }
+            }
+        }
         req.getRequestDispatcher("/jsp/messages.jsp").forward(req, resp);
     }
     
@@ -100,31 +118,99 @@ public class MessageController extends HttpServlet {
             handleViewMessages(req, resp, user);
             return;
         }
+        // Block sending friend request to yourself immediately
+        if (user.getUserId() == recipient.getUserId() && Message.TYPE_FRIEND_REQUEST.equals(messageType)) {
+            req.setAttribute("error", "You cannot send a friend request to yourself.");
+            handleViewMessages(req, resp, user);
+            return;
+        }
         
         Message message = null;
+        boolean handled = false;
         
         switch (messageType) {
             case Message.TYPE_NOTE:
                 message = messageDAO.sendNote(user.getUserId(), recipient.getUserId(), content);
+                if (message != null) {
+                    req.setAttribute("success", "Message sent successfully");
+                } else {
+                    req.setAttribute("error", "Failed to send message");
+                }
+                handled = true;
                 break;
             case Message.TYPE_FRIEND_REQUEST:
-                message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
+                // Use FriendshipDAO for robust checks
+                if (user.getUserId() == recipient.getUserId()) {
+                    req.setAttribute("error", "You cannot send a friend request to yourself.");
+                    handleViewMessages(req, resp, user);
+                    return;
+                } else if (friendshipDAO.areFriends(user.getUserId(), recipient.getUserId())) {
+                    req.setAttribute("error", "You are already friends with this user.");
+                } else if (friendshipDAO.hasPendingRequest(user.getUserId(), recipient.getUserId()) ||
+                           friendshipDAO.hasPendingRequest(recipient.getUserId(), user.getUserId())) {
+                    req.setAttribute("error", "A friend request is already pending between you and this user.");
+                } else {
+                    try {
+                        friendshipDAO.sendFriendRequest(user.getUserId(), recipient.getUserId());
+                        message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
+                        if (message != null) {
+                            req.setAttribute("success", "Friend request sent successfully");
+                        } else {
+                            req.setAttribute("error", "Failed to send friend request message");
+                        }
+                    } catch (Exception e) {
+                        req.setAttribute("error", "Failed to create friendship: " + e.getMessage());
+                    }
+                }
+                handled = true;
                 break;
             case Message.TYPE_CHALLENGE:
-                if (quizIdParam != null) {
-                    int quizId = Integer.parseInt(quizIdParam);
-                    message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), content, quizId);
+                String quizNameParam = req.getParameter("quizName");
+                if (quizNameParam != null && !quizNameParam.trim().isEmpty()) {
+                    model.Quiz quiz = quizDAO.findByTitle(quizNameParam.trim());
+                    if (quiz == null) {
+                        req.setAttribute("error", "Quiz not found with that name");
+                    } else {
+                        message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), content, quiz.getQuizId());
+                        if (message != null) {
+                            message.setQuizName(quiz.getTitle());
+                            req.setAttribute("success", "Challenge sent successfully");
+                        } else {
+                            req.setAttribute("error", "Failed to send challenge");
+                        }
+                    }
+                } else {
+                    req.setAttribute("error", "Quiz name is required for a challenge");
                 }
+                handled = true;
                 break;
         }
         
-        if (message != null) {
-            req.setAttribute("success", "Message sent successfully");
-        } else {
-            req.setAttribute("error", "Failed to send message");
+        if (!handled) {
+            req.setAttribute("error", "Invalid message type or failed to send message");
         }
         
         handleViewMessages(req, resp, user);
+    }
+    
+    private void handleMarkAsRead(HttpServletRequest req, HttpServletResponse resp, User user)
+            throws SQLException, ServletException, IOException {
+        String messageIdParam = req.getParameter("messageId");
+        if (messageIdParam != null) {
+            int messageId = Integer.parseInt(messageIdParam);
+            messageDAO.markAsRead(messageId);
+        }
+        resp.sendRedirect(req.getContextPath() + "/messages");
+    }
+    
+    private void handleDeleteMessage(HttpServletRequest req, HttpServletResponse resp, User user)
+            throws SQLException, ServletException, IOException {
+        String messageIdParam = req.getParameter("messageId");
+        if (messageIdParam != null) {
+            int messageId = Integer.parseInt(messageIdParam);
+            messageDAO.deleteMessage(messageId);
+        }
+        resp.sendRedirect(req.getContextPath() + "/messages");
     }
     
     private User getCurrentUser(HttpServletRequest req) {

@@ -115,6 +115,25 @@ public class QuizDAO {
     }
     
     /**
+     * Find a quiz by its unique title
+     * @param title The quiz title to search for
+     * @return Quiz object if found, null otherwise
+     * @throws SQLException If database error occurs
+     */
+    public Quiz findByTitle(String title) throws SQLException {
+        String sql = "SELECT * FROM quizzes WHERE title = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, title);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return mapRowToQuiz(rs);
+                }
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Get all quizzes by creator
      * @param creatorId The creator user ID
      * @return List of quizzes created by the user
