@@ -25,18 +25,11 @@
 <head>
     <title>Quiz Website - Home</title>
     <style>
-        .leaderboard-btn {
-            float: right;
-            margin-top: -40px;
-            margin-right: 20px;
-        }
+        /* Remove .leaderboard-btn CSS */
     </style>
 </head>
 <body>
 <h1>Welcome to the Quiz Website!</h1>
-<a href="${pageContext.request.contextPath}/leaderboard" class="leaderboard-btn">
-    <button>Leaderboard</button>
-</a>
 <h2>All Quizzes</h2>
 <ul>
     <% if (quizzes != null && !quizzes.isEmpty()) {
@@ -52,6 +45,7 @@
 <a href="login">Login</a> | <a href="register">Register</a>
 <% } else { %>
 <p>You are logged in.</p>
+<a href="${pageContext.request.contextPath}/profile">My Profile</a><br/>
 <a href="${pageContext.request.contextPath}/quiz/create">Create Quiz</a><br/>
 <a href="${pageContext.request.contextPath}/friends">Manage Friends</a><br/>
 <a href="${pageContext.request.contextPath}/messages">View Messages</a><br/>
