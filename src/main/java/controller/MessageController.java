@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.List;
 
-@WebServlet(urlPatterns = {"/messages", "/messages/send", "/messages/markRead"})public class MessageController extends HttpServlet {
+@WebServlet(urlPatterns = {"/messages", "/messages/send", "/messages/markRead", "/messages/delete"})public class MessageController extends HttpServlet {
     
     private MessageDAO messageDAO;
     private UserDAO userDAO;
@@ -68,6 +68,8 @@ import java.util.List;
                 handleSendMessage(req, resp, currentUser);
             } else if ("/messages/markRead".equals(path)) {
                 handleMarkAsRead(req, resp, currentUser);
+            } else if ("/messages/delete".equals(path)) {
+                handleDeleteMessage(req, resp, currentUser);
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
             }
@@ -126,17 +128,26 @@ import java.util.List;
                 break;
             case Message.TYPE_FRIEND_REQUEST:
                 // Use FriendshipDAO for robust checks
-                if (friendshipDAO.areFriends(user.getUserId(), recipient.getUserId())) {
+                if (user.getUserId() == recipient.getUserId()) {
+                    req.setAttribute("error", "You cannot send a friend request to yourself.");
+                    handleViewMessages(req, resp, user);
+                    return;
+                } else if (friendshipDAO.areFriends(user.getUserId(), recipient.getUserId())) {
                     req.setAttribute("error", "You are already friends with this user.");
                 } else if (friendshipDAO.hasPendingRequest(user.getUserId(), recipient.getUserId()) ||
                            friendshipDAO.hasPendingRequest(recipient.getUserId(), user.getUserId())) {
                     req.setAttribute("error", "A friend request is already pending between you and this user.");
                 } else {
-                    message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
-                    if (message != null) {
-                        req.setAttribute("success", "Friend request sent successfully");
-                    } else {
-                        req.setAttribute("error", "Failed to send friend request");
+                    try {
+                        friendshipDAO.sendFriendRequest(user.getUserId(), recipient.getUserId());
+                        message = messageDAO.sendFriendRequest(user.getUserId(), recipient.getUserId(), content);
+                        if (message != null) {
+                            req.setAttribute("success", "Friend request sent successfully");
+                        } else {
+                            req.setAttribute("error", "Failed to send friend request message");
+                        }
+                    } catch (Exception e) {
+                        req.setAttribute("error", "Failed to create friendship: " + e.getMessage());
                     }
                 }
                 handled = true;
@@ -170,6 +181,16 @@ import java.util.List;
         if (messageIdParam != null) {
             int messageId = Integer.parseInt(messageIdParam);
             messageDAO.markAsRead(messageId);
+        }
+        resp.sendRedirect(req.getContextPath() + "/messages");
+    }
+    
+    private void handleDeleteMessage(HttpServletRequest req, HttpServletResponse resp, User user)
+            throws SQLException, ServletException, IOException {
+        String messageIdParam = req.getParameter("messageId");
+        if (messageIdParam != null) {
+            int messageId = Integer.parseInt(messageIdParam);
+            messageDAO.deleteMessage(messageId);
         }
         resp.sendRedirect(req.getContextPath() + "/messages");
     }
