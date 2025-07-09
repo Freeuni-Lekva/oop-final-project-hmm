@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: nika
-  Date: 7/9/2025
-  Time: 9:38 PM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.User, model.Achievement, java.util.List" %>
 <html>
@@ -19,16 +12,8 @@
     </style>
 </head>
 <body>
-<c:choose>
-    <c:when test="${isOwnProfile}">
-        <a href="${pageContext.request.contextPath}/"><button>Return to Home</button></a>
-    </c:when>
-    <c:when test="${not isOwnProfile and not empty quizId}">
-        <a href="${pageContext.request.contextPath}/quizSummary.jsp?quizId=${quizId}"><button>Back to Rankings</button></a>
-    </c:when>
-</c:choose>
+<a href="${pageContext.request.contextPath}/" style="display:inline-block;margin-bottom:20px;"><button>Return to Home</button></a>
 <h1>My Profile</h1>
-
 <div class="profile-section">
     <span class="profile-label">Username:</span>
     <span>${userInfo.username}</span><br/>
@@ -37,14 +22,12 @@
     <span class="profile-label">Registered on:</span>
     <span>${userInfo.createdDate}</span><br/>
 </div>
-
 <div class="profile-section">
     <span class="profile-label">Quizzes Taken:</span>
     <span>${quizCount}</span><br/>
     <span class="profile-label">Average Score:</span>
     <span>${avgScore}</span><br/>
 </div>
-
 <div class="profile-section">
     <span class="profile-label">Achievements:</span>
     <ul class="achievements-list">
@@ -66,6 +49,5 @@
         </c:choose>
     </ul>
 </div>
-
 </body>
-</html>
+</html> 

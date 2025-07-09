@@ -126,23 +126,43 @@ public class FriendshipController extends HttpServlet {
             throws SQLException, ServletException, IOException {
         
         String friendUsername = req.getParameter("friendUsername");
+        boolean returnToProfile = "true".equals(req.getParameter("returnToProfile"));
+        String redirectProfileUrl = req.getContextPath() + "/user?username=" + friendUsername;
         
         if (friendUsername == null || friendUsername.trim().isEmpty()) {
             req.setAttribute("error", "Please enter a username");
-            handleViewFriends(req, resp, user);
+            if (returnToProfile) {
+                req.setAttribute("quizId", req.getParameter("quizId"));
+                req.setAttribute("friendUsername", friendUsername);
+                req.getRequestDispatcher("/jsp/userProfile.jsp").forward(req, resp);
+            } else {
+                handleViewFriends(req, resp, user);
+            }
             return;
         }
         
         User friend = userDAO.findByUsername(friendUsername);
         if (friend == null) {
             req.setAttribute("error", "User not found");
-            handleViewFriends(req, resp, user);
+            if (returnToProfile) {
+                req.setAttribute("quizId", req.getParameter("quizId"));
+                req.setAttribute("friendUsername", friendUsername);
+                req.getRequestDispatcher("/jsp/userProfile.jsp").forward(req, resp);
+            } else {
+                handleViewFriends(req, resp, user);
+            }
             return;
         }
         
         if (friend.getUserId() == user.getUserId()) {
             req.setAttribute("error", "Cannot send friend request to yourself");
-            handleViewFriends(req, resp, user);
+            if (returnToProfile) {
+                req.setAttribute("quizId", req.getParameter("quizId"));
+                req.setAttribute("friendUsername", friendUsername);
+                req.getRequestDispatcher("/jsp/userProfile.jsp").forward(req, resp);
+            } else {
+                handleViewFriends(req, resp, user);
+            }
             return;
         }
         
@@ -171,7 +191,24 @@ public class FriendshipController extends HttpServlet {
             }
         }
         
-        handleViewFriends(req, resp, user);
+        if (returnToProfile) {
+            // Store message in session and redirect to user profile page
+            HttpSession httpSession = req.getSession();
+            if (req.getAttribute("success") != null) {
+                httpSession.setAttribute("success", req.getAttribute("success"));
+            }
+            if (req.getAttribute("error") != null) {
+                httpSession.setAttribute("error", req.getAttribute("error"));
+            }
+            String quizId = req.getParameter("quizId");
+            String redirectUrl = req.getContextPath() + "/user?username=" + friendUsername;
+            if (quizId != null && !quizId.isEmpty()) {
+                redirectUrl += "&quizId=" + quizId;
+            }
+            resp.sendRedirect(redirectUrl);
+        } else {
+            handleViewFriends(req, resp, user);
+        }
     }
     
     private void handleAcceptFriendRequest(HttpServletRequest req, HttpServletResponse resp, User user) 
