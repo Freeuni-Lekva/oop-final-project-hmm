@@ -201,6 +201,19 @@ public class AnnouncementDAO {
             return stmt.executeUpdate() > 0;
         }
     }
+
+    /**
+     * Delete all inactive announcements (admin cleanup function)
+     * @return Number of announcements deleted
+     * @throws SQLException If database error occurs
+     */
+    public int deleteInactiveAnnouncements() throws SQLException {
+        String sql = "DELETE FROM announcements WHERE is_active = FALSE";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            return stmt.executeUpdate();
+        }
+    }
     
     // ========================= STATISTICS =========================
     
