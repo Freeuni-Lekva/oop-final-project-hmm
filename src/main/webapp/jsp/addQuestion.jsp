@@ -49,29 +49,43 @@
 <a href="${pageContext.request.contextPath}/" class="nav-home">← Home</a>
 <div class="form-container">
     <h2>Add a Question</h2>
+    <% if (request.getAttribute("error") != null) { %>
+        <div style="margin-bottom:1em;"> <%= request.getAttribute("error") %> </div>
+    <% } %>
     <form action="${pageContext.request.contextPath}/quiz/addQuestion" method="post">
         <label for="questionType">Question Type:</label>
         <select id="questionType" name="questionType" onchange="showFields()" required>
-            <option value="multiple-choice">Multiple Choice</option>
-            <option value="fill-in-blank">Fill in the Blank</option>
-            <option value="picture-response">Picture Response</option>
-            <option value="question-response">Question Response</option>
+            <option value="multiple-choice" <%= "multiple-choice".equals(request.getAttribute("questionType")) ? "selected" : "" %>>Multiple Choice</option>
+            <option value="fill-in-blank" <%= "fill-in-blank".equals(request.getAttribute("questionType")) ? "selected" : "" %>>Fill in the Blank</option>
+            <option value="picture-response" <%= "picture-response".equals(request.getAttribute("questionType")) ? "selected" : "" %>>Picture Response</option>
+            <option value="question-response" <%= "question-response".equals(request.getAttribute("questionType")) ? "selected" : "" %>>Question Response</option>
         </select>
 
         <label for="questionText">Question Text:</label>
-        <textarea id="questionText" name="questionText" rows="3" required></textarea>
+        <textarea id="questionText" name="questionText" rows="3" required><%= request.getAttribute("questionText") != null ? request.getAttribute("questionText") : "" %></textarea>
 
         <div id="choicesSection" style="display:none;">
             <label>Choices:</label>
             <div id="choicesGroup" class="choices-group">
-                <div class="choice-input">
-                    <input type="text" name="choices" placeholder="Choice" required>
-                    <button type="button" onclick="this.parentNode.remove()">Remove</button>
-                </div>
-                <div class="choice-input">
-                    <input type="text" name="choices" placeholder="Choice" required>
-                    <button type="button" onclick="this.parentNode.remove()">Remove</button>
-                </div>
+                <% 
+                java.util.List choices = (java.util.List) request.getAttribute("choices");
+                if (choices != null && !choices.isEmpty()) {
+                    for (Object c : choices) { %>
+                        <div class="choice-input">
+                            <input type="text" name="choices" placeholder="Choice" value="<%= c %>" required>
+                            <button type="button" onclick="this.parentNode.remove()">Remove</button>
+                        </div>
+                <%  }
+                } else { %>
+                    <div class="choice-input">
+                        <input type="text" name="choices" placeholder="Choice" required>
+                        <button type="button" onclick="this.parentNode.remove()">Remove</button>
+                    </div>
+                    <div class="choice-input">
+                        <input type="text" name="choices" placeholder="Choice" required>
+                        <button type="button" onclick="this.parentNode.remove()">Remove</button>
+                    </div>
+                <% } %>
             </div>
             <button type="button" onclick="addChoiceField()">Add Choice</button>
         </div>
@@ -82,7 +96,7 @@
         </div>
 
         <label for="correctAnswer">Correct Answer(s):</label>
-        <input type="text" id="correctAnswer" name="correctAnswer" required>
+        <input type="text" id="correctAnswer" name="correctAnswer" required value="<%= request.getAttribute("correctAnswer") != null ? request.getAttribute("correctAnswer") : "" %>">
         <small>For multiple correct answers, separate them with a comma (e.g., "George Washington, Washington")</small>
 
         <button type="submit" name="addAnother">Add Another Question</button>
