@@ -67,5 +67,22 @@
     </ul>
 </div>
 
+<h2>Change Password</h2>
+<form method="post" action="${pageContext.request.contextPath}/profile">
+    <label for="currentPassword">Current Password:</label><br/>
+    <input type="password" id="currentPassword" name="currentPassword" required /><br/>
+    <label for="newPassword">New Password:</label><br/>
+    <input type="password" id="newPassword" name="newPassword" required /><br/>
+    <label for="confirmNewPassword">Confirm New Password:</label><br/>
+    <input type="password" id="confirmNewPassword" name="confirmNewPassword" required /><br/>
+    <input type="submit" value="Change Password" />
+</form>
+<c:if test="${not empty passwordError}">
+    <div style="color: red; margin-top: 10px;">${passwordError}</div>
+</c:if>
+<c:if test="${not empty passwordSuccess}">
+    <div style="color: green; margin-top: 10px;">${passwordSuccess}</div>
+</c:if>
+
 </body>
 </html>
