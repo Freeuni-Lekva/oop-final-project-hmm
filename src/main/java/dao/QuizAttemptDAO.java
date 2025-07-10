@@ -369,6 +369,28 @@ public class QuizAttemptDAO {
         return attempts;
     }
     
+    /**
+     * Get the most recent quiz attempts for a user
+     * @param userId The user ID
+     * @param limit Maximum number of attempts to return
+     * @return List of recent quiz attempts
+     * @throws SQLException If database error occurs
+     */
+    public List<QuizAttempt> getRecentAttemptsForUser(int userId, int limit) throws SQLException {
+        String sql = "SELECT id, user_id, quiz_id, score, total_questions, time_taken, date_taken, is_practice FROM quiz_attempts WHERE user_id = ? ORDER BY date_taken DESC LIMIT ?";
+        List<QuizAttempt> attempts = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    attempts.add(mapRowToQuizAttempt(rs));
+                }
+            }
+        }
+        return attempts;
+    }
+    
     // ========================= UPDATE OPERATIONS =========================
     
     /**

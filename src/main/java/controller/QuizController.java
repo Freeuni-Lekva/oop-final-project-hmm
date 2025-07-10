@@ -174,7 +174,7 @@ public class QuizController extends HttpServlet {
                         qSession.removeAttribute("pendingQuizRandomOrder");
                         qSession.removeAttribute("pendingQuizOnePage");
                         qSession.removeAttribute("pendingQuizImmediateCorrection");
-                        resp.sendRedirect(req.getContextPath() + "/index.jsp");
+                        resp.sendRedirect(req.getContextPath() + "/");
                     }
                     break;
                 default:

@@ -244,7 +244,7 @@
             <p>
                 <a href="${pageContext.request.contextPath}/friends">Manage Friends</a> |
                 <a href="${pageContext.request.contextPath}/quiz/create">Create Quiz</a> |
-                <a href="${pageContext.request.contextPath}/Index.jsp">Home</a> |
+                <a href="${pageContext.request.contextPath}/">Home</a> |
             </p>
         </div>
     </div>

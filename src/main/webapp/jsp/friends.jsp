@@ -155,7 +155,7 @@
             <p>
                 <a href="${pageContext.request.contextPath}/messages">View Messages</a> |
                 <a href="${pageContext.request.contextPath}/quiz/create">Create Quiz</a> |
-                <a href="${pageContext.request.contextPath}/index">Home</a>
+                <a href="${pageContext.request.contextPath}/">Home</a>
             </p>
         </div>
     </div>
