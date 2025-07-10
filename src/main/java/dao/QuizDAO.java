@@ -313,6 +313,31 @@ public class QuizDAO {
         return quizzes;
     }
     
+    /**
+     * Get the most popular quizzes by number of attempts
+     * @param limit Maximum number of quizzes to return
+     * @return List of popular quizzes
+     * @throws SQLException If database error occurs
+     */
+    public List<Quiz> getPopularQuizzes(int limit) throws SQLException {
+        String sql = "SELECT q.id, q.title, q.description, q.creator_id, q.random_order, q.one_page, q.immediate_correction, q.practice_mode, q.created_date " +
+                     "FROM quizzes q " +
+                     "LEFT JOIN quiz_attempts a ON q.id = a.quiz_id " +
+                     "GROUP BY q.id " +
+                     "ORDER BY COUNT(a.id) DESC, q.created_date DESC " +
+                     "LIMIT ?";
+        List<Quiz> quizzes = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setInt(1, limit);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    quizzes.add(mapRowToQuiz(rs));
+                }
+            }
+        }
+        return quizzes;
+    }
+    
     // ========================= UPDATE OPERATIONS =========================
     
     /**
