@@ -5,8 +5,10 @@ import dao.UserDAO;
 import dao.FriendshipDAO;
 import dao.QuizDAO;
 import dao.QuizAttemptDAO;
+import dao.AchievementDAO;
 import model.Message;
 import model.User;
+import model.Achievement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,6 +26,7 @@ import java.util.List;
     private FriendshipDAO friendshipDAO;
     private QuizDAO quizDAO;
     private QuizAttemptDAO quizAttemptDAO;
+    private AchievementDAO achievementDAO;
 
     @Override
     public void init() throws ServletException {
@@ -33,6 +36,7 @@ import java.util.List;
             friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
             quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
             quizAttemptDAO = (QuizAttemptDAO) getServletContext().getAttribute("quizAttemptDAO");
+            achievementDAO = (AchievementDAO) getServletContext().getAttribute("achievementDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
