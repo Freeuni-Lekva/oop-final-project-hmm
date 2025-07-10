@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Quizzes - Admin Panel</title>
+    <title>Quiz Management - Admin Panel</title>
     <style>
         * {
             margin: 0;
@@ -17,46 +17,89 @@
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
             min-height: 100vh;
             color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 2.2em;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .nav-buttons span {
+            font-size: 1.1em;
+            font-weight: 500;
+        }
+        
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 0.95em;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .header {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .header h1 {
-            color: #4a5568;
-            margin-bottom: 15px;
-            font-size: 2.2em;
-            font-weight: 700;
+            padding: 30px 20px;
         }
         
         .breadcrumb {
-            color: #718096;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            color: #666;
             font-size: 0.95em;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
         
         .breadcrumb a {
-            color: #667eea;
+            color: #c62828;
             text-decoration: none;
-            transition: color 0.3s ease;
+            font-weight: 500;
         }
         
         .breadcrumb a:hover {
-            color: #553c9a;
+            color: #b71c1c;
         }
         
         .admin-actions {
@@ -89,8 +132,8 @@
         
         .search-box:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #c62828;
+            box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.1);
         }
         
         .btn {
@@ -107,23 +150,23 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
             color: white;
         }
         
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(198, 40, 40, 0.4);
         }
         
         .btn-search {
-            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            background: linear-gradient(135deg, #c62828 0%, #b71c1c 100%);
             color: white;
         }
         
         .btn-search:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+            box-shadow: 0 5px 15px rgba(198, 40, 40, 0.4);
         }
         
         .stats-summary {
@@ -147,7 +190,7 @@
         .stat-number {
             font-size: 2.5em;
             font-weight: 700;
-            color: #667eea;
+            color: #c62828;
             margin-bottom: 5px;
         }
         
@@ -205,7 +248,7 @@
         }
         
         .quizzes-table tbody tr:hover {
-            background: rgba(102, 126, 234, 0.05);
+            background: rgba(198, 40, 40, 0.05);
             transform: translateY(-1px);
         }
         
@@ -234,7 +277,7 @@
         }
         
         .creator-name {
-            color: #667eea;
+            color: #c62828;
             font-weight: 500;
         }
         
@@ -293,7 +336,7 @@
         }
         
         .btn-delete {
-            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             color: white;
             border: none;
             padding: 8px 15px;
@@ -306,7 +349,7 @@
         
         .btn-delete:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(245, 101, 101, 0.4);
+            box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
         }
         
         .alert {
@@ -323,9 +366,9 @@
         }
         
         .alert-error {
-            background: rgba(245, 101, 101, 0.1);
-            color: #e53e3e;
-            border: 1px solid rgba(245, 101, 101, 0.2);
+            background: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
+            border: 1px solid rgba(220, 38, 38, 0.2);
         }
         
         .empty-state {
@@ -350,6 +393,17 @@
         }
         
         @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .nav-buttons {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
             .container {
                 padding: 15px;
             }
@@ -378,13 +432,22 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
+    <!-- Header with Navigation -->
+    <div class="header">
+        <div class="header-content">
             <h1>🎯 Quiz Management</h1>
-            <div class="breadcrumb">
-                <a href="${pageContext.request.contextPath}/admin/dashboard">Admin Dashboard</a> / Manage Quizzes
+            <div class="nav-buttons">
+                <span>Welcome, ${sessionScope.admin.username}!</span>
+                <a href="${pageContext.request.contextPath}/admin/dashboard" class="nav-btn">Dashboard</a>
+                <a href="${pageContext.request.contextPath}/admin/logout" class="nav-btn">Logout</a>
             </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="${pageContext.request.contextPath}/admin/dashboard">Admin Dashboard</a> / Quiz Management
         </div>
 
         <!-- Success/Error Messages -->
