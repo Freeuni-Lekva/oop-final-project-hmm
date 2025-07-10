@@ -6,6 +6,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@ page import="model.Message" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -151,9 +152,10 @@
                         <select id="messageTypeSelect" onchange="showMessageForm(this.value)" required>
                             <option value="note">Note</option>
                             <option value="friend_request">Friend Request</option>
-                            <option value="challenge">Quiz Challenge</option>
+                            <option value="challenge">Quiz Challenge (only available for friends)</option>
                         </select>
                         <input type="hidden" id="messageType" name="messageType" value="note" />
+                        <div style="font-size:0.9em;color:#888;margin-top:4px;">* You can only send quiz challenges to your friends.</div>
                     </div>
                 </div>
                 
@@ -199,11 +201,24 @@
                                     </c:choose>
                                 </span>
                                 <span class="message-date">
-                                    <fmt:formatDate value="${message.dateSent}" pattern="MMM dd, yyyy HH:mm" />
+                                    <fmt:formatDate value="${message.dateSent}" pattern="yyyy-MM-dd HH:mm" />
                                 </span>
                             </div>
-                            <div class="message-sender">From: ${message.senderUsername}</div>
-                            <div class="message-content">${message.content}</div>
+                            <div class="message-sender">
+                                From: <c:out value="${message.senderUsername}" />
+                            </div>
+                            <div class="message-content">
+                                <c:choose>
+                                    <c:when test="${message.messageType == 'challenge'}">
+                                        <div class="challenge-info">
+                                            <c:out value="${message.content}" />
+                                        </div>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <div>${fn:escapeXml(message.content)}</div>
+                                    </c:otherwise>
+                                </c:choose>
+                            </div>
                             
                             <c:if test="${message.messageType == 'challenge' && message.quizId != null}">
                                 <div class="challenge-info">
