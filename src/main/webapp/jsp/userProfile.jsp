@@ -1,6 +1,36 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="model.User, model.Achievement, java.util.List" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%
+    String[] allAchievements = {
+        "amateur_author",
+        "prolific_author",
+        "prodigious_author",
+        "practice_makes_perfect",
+        "i_am_the_greatest",
+        "quiz_machine"
+    };
+    String[] achievementNames = {
+        "Amateur Author",
+        "Prolific Author",
+        "Prodigious Author",
+        "Practice Makes Perfect",
+        "I am the Greatest",
+        "Quiz Machine"
+    };
+    String[] achievementDescs = {
+        "Created your first quiz!",
+        "Created 5 quizzes!",
+        "Created 10 quizzes!",
+        "Took a quiz in practice mode!",
+        "Achieved the highest score on a quiz!",
+        "Took 10 quizzes!"
+    };
+    pageContext.setAttribute("allAchievements", allAchievements);
+    pageContext.setAttribute("achievementNames", achievementNames);
+    pageContext.setAttribute("achievementDescs", achievementDescs);
+%>
 <html>
 <head>
     <title>User Profile</title>
@@ -47,24 +77,28 @@
 </div>
 <div class="profile-section">
     <span class="profile-label">Achievements:</span>
-    <ul class="achievements-list">
-        <c:choose>
-            <c:when test="${not empty achievements}">
-                <c:forEach var="ach" items="${achievements}">
-                    <li>
-                        <span>${ach.achievementType}</span>
-                        <c:if test="${not empty ach.description}">
-                            - <span>${ach.description}</span>
-                        </c:if>
-                        <span style="color: #888; font-size: 0.9em;">(${ach.dateEarned})</span>
-                    </li>
-                </c:forEach>
-            </c:when>
-            <c:otherwise>
-                <li>No achievements yet.</li>
-            </c:otherwise>
-        </c:choose>
-    </ul>
+    <c:set var="unlocked" value="${fn:length(achievements)}" />
+    <span style="margin-left:10px; color:#555;">${unlocked}/6 unlocked</span>
+    <div style="margin: 16px 0 0 0;">
+        <c:forEach var="achType" items="${allAchievements}" varStatus="status">
+            <c:set var="hasIt" value="false" />
+            <c:forEach var="ach" items="${achievements}">
+                <c:if test="${ach.achievementType == achType}">
+                    <c:set var="hasIt" value="true" />
+                </c:if>
+            </c:forEach>
+            <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 1.5em; margin-right: 10px;">
+                    <c:choose>
+                        <c:when test="${hasIt}">&#x2705;</c:when>
+                        <c:otherwise>&#x2B1C;</c:otherwise>
+                    </c:choose>
+                </span>
+                <span style="font-weight: bold; min-width: 160px;">${achievementNames[status.index]}</span>
+                <span style="margin-left: 10px; color: #444;">&#8594; ${achievementDescs[status.index]}</span>
+            </div>
+        </c:forEach>
+    </div>
 </div>
 </body>
 </html> 
