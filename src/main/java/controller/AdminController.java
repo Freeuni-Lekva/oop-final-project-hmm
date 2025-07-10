@@ -116,7 +116,7 @@ public class AdminController extends HttpServlet {
                 break;
             case "/admin/cleanup":
                 if (isAdminLoggedIn(req)) {
-                    req.getRequestDispatcher("/jsp/admin/cleanup.jsp").forward(req, resp);
+                    handleCleanupPage(req, resp);
                 } else {
                     resp.sendRedirect(req.getContextPath() + "/admin/login");
                 }
@@ -477,18 +477,47 @@ public class AdminController extends HttpServlet {
                     int deletedAttempts = quizAttemptDAO.deleteAllAttempts();
                     req.getSession().setAttribute("success", "Cleared " + deletedAttempts + " quiz attempts!");
                     break;
-                case "clearInactiveAnnouncements":
-                    // Delete inactive announcements
-                    int deletedAnnouncements = announcementDAO.deleteInactiveAnnouncements();
-                    req.getSession().setAttribute("success", "Cleared " + deletedAnnouncements + " inactive announcements!");
+                case "clearAllAnnouncements":
+                    // Delete all announcements
+                    int deletedAnnouncements = announcementDAO.deleteAllAnnouncements();
+                    req.getSession().setAttribute("success", "Cleared " + deletedAnnouncements + " announcements!");
                     break;
                 default:
-                    req.getSession().setAttribute("error", "Invalid cleanup action!");
+                    req.getSession().setAttribute("error", "Unknown cleanup action!");
+                    break;
             }
         } catch (SQLException e) {
-            req.getSession().setAttribute("error", "Error during cleanup: " + e.getMessage());
+            e.printStackTrace();
+            req.getSession().setAttribute("error", "Database error during cleanup: " + e.getMessage());
         }
         
         resp.sendRedirect(req.getContextPath() + "/admin/cleanup");
+    }
+
+    /**
+     * Handle cleanup page display
+     */
+    private void handleCleanupPage(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            // Get statistics for display
+            int totalQuizAttempts = quizAttemptDAO.getTotalAttemptCount();
+            int totalQuizzes = quizDAO.getTotalQuizCount();
+            int totalUsers = userDAO.getTotalUserCount();
+            int totalAnnouncements = announcementDAO.getTotalAnnouncementCount(false); // All announcements
+            int totalQuestions = questionDAO.getTotalQuestionCount();
+            
+            // Set attributes for JSP
+            req.setAttribute("totalQuizAttempts", totalQuizAttempts);
+            req.setAttribute("totalQuizzes", totalQuizzes);
+            req.setAttribute("totalUsers", totalUsers);
+            req.setAttribute("totalAnnouncements", totalAnnouncements);
+            req.setAttribute("totalQuestions", totalQuestions);
+            
+            req.getRequestDispatcher("/jsp/admin/cleanup.jsp").forward(req, resp);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            req.setAttribute("error", "Failed to load cleanup statistics: " + e.getMessage());
+            req.getRequestDispatcher("/jsp/admin/cleanup.jsp").forward(req, resp);
+        }
     }
 } 
