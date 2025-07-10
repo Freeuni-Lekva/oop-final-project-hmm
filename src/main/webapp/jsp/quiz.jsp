@@ -32,6 +32,6 @@
     <label><input type="checkbox" name="practiceMode" value="true"> Practice Mode</label><br/>
     <button type="submit">Start Quiz</button>
 </form>
-<a href="${pageContext.request.contextPath}/index">Back to Home</a>
+<a href="${pageContext.request.contextPath}/">Back to Home</a>
 </body>
 </html>
