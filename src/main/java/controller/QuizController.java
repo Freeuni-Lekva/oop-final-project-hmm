@@ -16,11 +16,14 @@ import java.util.List;
 import dao.QuestionDAO;
 import model.Question;
 import java.util.ArrayList;
+import dao.AchievementDAO;
+import model.Achievement;
 
 @WebServlet(urlPatterns = {"/quizzes", "/quiz", "/quiz/create", "/quiz/addQuestion"})
 public class QuizController extends HttpServlet {
     private QuizDAO quizDAO;
     private QuestionDAO questionDAO;
+    private AchievementDAO achievementDAO;
 
     @Override
     public void init() throws ServletException
@@ -30,6 +33,7 @@ public class QuizController extends HttpServlet {
             Connection connection = (Connection) getServletContext().getAttribute("DBConnection");
             quizDAO = (QuizDAO)getServletContext().getAttribute("quizDAO");
             questionDAO = (QuestionDAO)getServletContext().getAttribute("questionDAO");
+            achievementDAO = (AchievementDAO)getServletContext().getAttribute("achievementDAO");
         }
         catch (Exception e)
         {
@@ -172,6 +176,17 @@ public class QuizController extends HttpServlet {
                             q.setQuizId(quizId);
                             q.setOrderNum(qOrder++);
                             questionDAO.createQuestion(q);
+                        }
+                        // Award achievements for quiz creation
+                        int createdCount = quizDAO.getQuizzesByCreator(creatorId).size();
+                        if (createdCount >= 1) {
+                            achievementDAO.awardAchievement(creatorId, model.Achievement.AMATEUR_AUTHOR);
+                        }
+                        if (createdCount >= 5) {
+                            achievementDAO.awardAchievement(creatorId, model.Achievement.PROLIFIC_AUTHOR);
+                        }
+                        if (createdCount >= 10) {
+                            achievementDAO.awardAchievement(creatorId, model.Achievement.PRODIGIOUS_AUTHOR);
                         }
                         // Clear session data
                         qSession.removeAttribute("pendingQuizTitle");
