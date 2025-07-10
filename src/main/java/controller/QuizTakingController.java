@@ -92,7 +92,7 @@ public class QuizTakingController extends HttpServlet {
         Boolean practiceMode = (Boolean) session.getAttribute("practiceMode");
         String allAtOnce = req.getParameter("allAtOnce");
         if (quiz == null || questions == null) {
-            resp.sendRedirect(req.getContextPath() + "/index.jsp");
+            resp.sendRedirect(req.getContextPath() + "/");
             return;
         }
         // All-at-once mode
