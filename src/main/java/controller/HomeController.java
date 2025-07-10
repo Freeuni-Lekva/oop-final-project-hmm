@@ -2,8 +2,10 @@ package controller;
 
 import dao.QuizDAO;
 import dao.QuizAttemptDAO;
+import dao.AnnouncementDAO;
 import model.Quiz;
 import model.QuizAttempt;
+import model.Announcement;
 import model.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -19,12 +21,14 @@ import java.util.List;
 public class HomeController extends HttpServlet {
     private QuizDAO quizDAO;
     private QuizAttemptDAO quizAttemptDAO;
+    private AnnouncementDAO announcementDAO;
 
     @Override
     public void init() throws ServletException {
         Connection connection = (Connection) getServletContext().getAttribute("DBConnection");
         quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
         quizAttemptDAO = (QuizAttemptDAO) getServletContext().getAttribute("quizAttemptDAO");
+        announcementDAO = (AnnouncementDAO) getServletContext().getAttribute("announcementDAO");
     }
 
     @Override
@@ -40,6 +44,10 @@ public class HomeController extends HttpServlet {
             // Recently created quizzes
             List<Quiz> recentQuizzes = quizDAO.getAllQuizzes(0, 5);
             req.setAttribute("recentQuizzes", recentQuizzes);
+
+            // Get active announcements for homepage
+            List<Announcement> activeAnnouncements = announcementDAO.getActiveAnnouncements();
+            req.setAttribute("activeAnnouncements", activeAnnouncements);
 
             // User-specific lists
             User user = (User) req.getSession().getAttribute("user");
