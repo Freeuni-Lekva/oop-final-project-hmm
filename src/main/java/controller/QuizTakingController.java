@@ -3,10 +3,12 @@ package controller;
 import dao.QuestionDAO;
 import dao.QuizDAO;
 import dao.QuizAttemptDAO;
+import dao.AchievementDAO;
 import model.Question;
 import model.Quiz;
 import model.QuizAttempt;
 import model.User;
+import model.Achievement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,6 +27,7 @@ public class QuizTakingController extends HttpServlet {
     private QuizDAO quizDAO;
     private QuestionDAO questionDAO;
     private QuizAttemptDAO quizAttemptDAO;
+    private AchievementDAO achievementDAO;
 
     @Override
     public void init() throws ServletException {
@@ -33,6 +36,7 @@ public class QuizTakingController extends HttpServlet {
             quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
             questionDAO = (QuestionDAO) getServletContext().getAttribute("questionDAO");
             quizAttemptDAO = (QuizAttemptDAO) getServletContext().getAttribute("quizAttemptDAO");
+            achievementDAO = (AchievementDAO) getServletContext().getAttribute("achievementDAO");
         } catch (Exception e) {
             throw new ServletException("DB connection error", e);
         }
@@ -123,8 +127,18 @@ public class QuizTakingController extends HttpServlet {
                 try {
                     if (practiceMode != null && practiceMode) {
                         quizAttemptDAO.createPracticeAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                        achievementDAO.awardAchievement(user.getUserId(), Achievement.PRACTICE_MAKES_PERFECT);
                     } else {
                         quizAttemptDAO.createSimpleAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                        int nonPracticeAttempts = quizAttemptDAO.getAttemptCountByUser(user.getUserId()) - quizAttemptDAO.getPracticeAttemptCount();
+                        if (nonPracticeAttempts >= 10) {
+                            achievementDAO.awardAchievement(user.getUserId(), Achievement.QUIZ_MACHINE);
+                        }
+                        // Award I_AM_THE_GREATEST if user is top scorer for this quiz
+                        List<model.QuizAttempt> topAttempts = quizAttemptDAO.getTopScoresForQuiz(quiz.getQuizId(), 1, false);
+                        if (!topAttempts.isEmpty() && topAttempts.get(0).getUserId() == user.getUserId()) {
+                            achievementDAO.awardAchievement(user.getUserId(), Achievement.I_AM_THE_GREATEST);
+                        }
                     }
                 } catch (SQLException e) {
                     throw new ServletException(e);
@@ -219,8 +233,18 @@ public class QuizTakingController extends HttpServlet {
                         try {
                             if (practiceMode != null && practiceMode) {
                                 quizAttemptDAO.createPracticeAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                                achievementDAO.awardAchievement(user.getUserId(), Achievement.PRACTICE_MAKES_PERFECT);
                             } else {
                                 quizAttemptDAO.createSimpleAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                                int nonPracticeAttempts = quizAttemptDAO.getAttemptCountByUser(user.getUserId()) - quizAttemptDAO.getPracticeAttemptCount();
+                                if (nonPracticeAttempts >= 10) {
+                                    achievementDAO.awardAchievement(user.getUserId(), Achievement.QUIZ_MACHINE);
+                                }
+                                // Award I_AM_THE_GREATEST if user is top scorer for this quiz
+                                List<model.QuizAttempt> topAttempts = quizAttemptDAO.getTopScoresForQuiz(quiz.getQuizId(), 1, false);
+                                if (!topAttempts.isEmpty() && topAttempts.get(0).getUserId() == user.getUserId()) {
+                                    achievementDAO.awardAchievement(user.getUserId(), Achievement.I_AM_THE_GREATEST);
+                                }
                             }
                         } catch (SQLException e) {
                             throw new ServletException(e);
@@ -295,8 +319,18 @@ public class QuizTakingController extends HttpServlet {
                 try {
                     if (practiceMode != null && practiceMode) {
                         quizAttemptDAO.createPracticeAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                        achievementDAO.awardAchievement(user.getUserId(), Achievement.PRACTICE_MAKES_PERFECT);
                     } else {
                         quizAttemptDAO.createSimpleAttempt(user.getUserId(), quiz.getQuizId(), score, questions.size(), timeTaken);
+                        int nonPracticeAttempts = quizAttemptDAO.getAttemptCountByUser(user.getUserId()) - quizAttemptDAO.getPracticeAttemptCount();
+                        if (nonPracticeAttempts >= 10) {
+                            achievementDAO.awardAchievement(user.getUserId(), Achievement.QUIZ_MACHINE);
+                        }
+                        // Award I_AM_THE_GREATEST if user is top scorer for this quiz
+                        List<model.QuizAttempt> topAttempts = quizAttemptDAO.getTopScoresForQuiz(quiz.getQuizId(), 1, false);
+                        if (!topAttempts.isEmpty() && topAttempts.get(0).getUserId() == user.getUserId()) {
+                            achievementDAO.awardAchievement(user.getUserId(), Achievement.I_AM_THE_GREATEST);
+                        }
                     }
                 } catch (SQLException e) {
                     throw new ServletException(e);
