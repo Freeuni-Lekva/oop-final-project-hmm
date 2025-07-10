@@ -278,7 +278,17 @@
             <a href="${pageContext.request.contextPath}/profile">My Profile</a><br/>
             <a href="${pageContext.request.contextPath}/quiz/create">Create Quiz</a><br/>
             <a href="${pageContext.request.contextPath}/friends">Manage Friends</a><br/>
-            <a href="${pageContext.request.contextPath}/messages">View Messages</a><br/>
+            <a href="${pageContext.request.contextPath}/messages" style="position:relative; display:inline-block;">
+                View Messages
+                <% Integer unreadCount = (Integer) request.getAttribute("unreadMessageCount"); %>
+                <% String recentTypeEmoji = (String) request.getAttribute("recentUnreadTypeEmoji"); %>
+                <% if (unreadCount != null && unreadCount > 0) { %>
+                    <span style="background:#dc3545;color:white;border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65em;position:relative;top:-8px;left:4px;vertical-align:middle;line-height:1;text-align:center;"> <%= unreadCount %> </span>
+                    <% if (recentTypeEmoji != null) { %>
+                        <span style="font-size:1.1em;vertical-align:middle;"> <%= recentTypeEmoji %> </span>
+                    <% } %>
+                <% } %>
+            </a><br/>
             <form action="logout" method="get" style="margin-top: 15px;">
                 <input type="submit" value="Logout" />
             </form>

@@ -4,6 +4,7 @@ import dao.MessageDAO;
 import dao.UserDAO;
 import dao.FriendshipDAO;
 import dao.QuizDAO;
+import dao.QuizAttemptDAO;
 import model.Message;
 import model.User;
 import jakarta.servlet.ServletException;
@@ -22,6 +23,7 @@ import java.util.List;
     private UserDAO userDAO;
     private FriendshipDAO friendshipDAO;
     private QuizDAO quizDAO;
+    private QuizAttemptDAO quizAttemptDAO;
 
     @Override
     public void init() throws ServletException {
@@ -30,6 +32,7 @@ import java.util.List;
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
             friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
             quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
+            quizAttemptDAO = (QuizAttemptDAO) getServletContext().getAttribute("quizAttemptDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
@@ -171,7 +174,30 @@ import java.util.List;
                     if (quiz == null) {
                         req.setAttribute("error", "Quiz not found with that name");
                     } else {
-                        message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), content, quiz.getQuizId());
+                        // Friendship check before sending challenge
+                        if (!friendshipDAO.areFriends(user.getUserId(), recipient.getUserId())) {
+                            req.setAttribute("error", "You can only send a challenge to users who are your friends.");
+                            handleViewMessages(req, resp, user);
+                            return;
+                        }
+                        int senderId = user.getUserId();
+                        double bestScore;
+                        try {
+                            bestScore = quizAttemptDAO.getBestScore(senderId, quiz.getQuizId(), false);
+                        } catch (Exception e) {
+                            req.setAttribute("error", "Error checking your quiz attempts. Please try again.");
+                            handleViewMessages(req, resp, user);
+                            return;
+                        }
+                        if (bestScore < 0) {
+                            req.setAttribute("error", "You must complete this quiz (not in practice mode) before you can send a challenge!");
+                            handleViewMessages(req, resp, user);
+                            return;
+                        }
+                        // Format the challenge message to include the score and quiz name (not id), and remove 'Can you beat it?'
+                        String challengeMsg = "I challenge you to quiz '" + quiz.getTitle() + "'! My best score is: " + String.format("%.2f", bestScore) + ".";
+                        req.setAttribute("challengeMessageContent", challengeMsg);
+                        message = messageDAO.sendChallenge(user.getUserId(), recipient.getUserId(), challengeMsg, quiz.getQuizId());
                         if (message != null) {
                             message.setQuizName(quiz.getTitle());
                             req.setAttribute("success", "Challenge sent successfully");

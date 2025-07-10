@@ -155,6 +155,12 @@ public class QuizController extends HttpServlet {
                         boolean quizImmediateCorrection = qSession.getAttribute("pendingQuizImmediateCorrection") != null && (Boolean) qSession.getAttribute("pendingQuizImmediateCorrection");
                         model.User quizUser = (model.User) qSession.getAttribute("user");
                         int creatorId = quizUser.getUserId();
+                        // Duplicate title check
+                        if (quizDAO.findByTitle(quizTitle) != null) {
+                            req.setAttribute("error", "A quiz with this title already exists. Please choose a different name.");
+                            req.getRequestDispatcher("/jsp/createQuiz.jsp").forward(req, resp);
+                            return;
+                        }
                         Quiz quiz = new Quiz(quizTitle, quizDescription, creatorId);
                         quiz.setRandomOrder(quizRandomOrder);
                         quiz.setOnePage(quizOnePage);
@@ -170,10 +176,10 @@ public class QuizController extends HttpServlet {
                         // Clear session data
                         qSession.removeAttribute("pendingQuizTitle");
                         qSession.removeAttribute("pendingQuizDescription");
-                        qSession.removeAttribute("pendingQuizQuestions");
                         qSession.removeAttribute("pendingQuizRandomOrder");
                         qSession.removeAttribute("pendingQuizOnePage");
                         qSession.removeAttribute("pendingQuizImmediateCorrection");
+                        qSession.removeAttribute("pendingQuizQuestions");
                         resp.sendRedirect(req.getContextPath() + "/");
                     }
                     break;

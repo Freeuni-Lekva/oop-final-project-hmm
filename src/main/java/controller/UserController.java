@@ -101,8 +101,14 @@ public class UserController extends HttpServlet {
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String username = req.getParameter("username");
         String password = req.getParameter("password");
+        String confirmPassword = req.getParameter("confirmPassword");
         String email = req.getParameter("email");
         try {
+            if (!password.equals(confirmPassword)) {
+                req.setAttribute("error", "Passwords do not match");
+                req.getRequestDispatcher("/jsp/register.jsp").forward(req, resp);
+                return;
+            }
             if (userDAO.findByUsername(username) != null) {
                 req.setAttribute("error", "Username already exists");
                 req.getRequestDispatcher("/jsp/register.jsp").forward(req, resp);
