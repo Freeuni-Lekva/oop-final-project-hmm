@@ -3,8 +3,10 @@ package controller;
 import dao.FriendshipDAO;
 import dao.UserDAO;
 import dao.MessageDAO;
+import dao.AchievementDAO;
 import model.Friendship;
 import model.User;
+import model.Achievement;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -21,6 +23,7 @@ public class FriendshipController extends HttpServlet {
     private FriendshipDAO friendshipDAO;
     private UserDAO userDAO;
     private MessageDAO messageDAO;
+    private AchievementDAO achievementDAO;
     
     @Override
     public void init() throws ServletException {
@@ -28,6 +31,7 @@ public class FriendshipController extends HttpServlet {
             friendshipDAO = (FriendshipDAO) getServletContext().getAttribute("friendshipDAO");
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
             messageDAO = (MessageDAO) getServletContext().getAttribute("messageDAO");
+            achievementDAO = (AchievementDAO) getServletContext().getAttribute("achievementDAO");
         } catch (Exception e) {
             throw new ServletException("Database connection error", e);
         }
