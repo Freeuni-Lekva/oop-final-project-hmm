@@ -88,7 +88,7 @@ public class UserController extends HttpServlet {
             if (user != null) {
                 HttpSession session = req.getSession();
                 session.setAttribute("user", user);
-                resp.sendRedirect("index.jsp");
+                resp.sendRedirect(req.getContextPath() + "/");
             } else {
                 req.setAttribute("error", "Invalid username or password");
                 req.getRequestDispatcher("/jsp/login.jsp").forward(req, resp);
