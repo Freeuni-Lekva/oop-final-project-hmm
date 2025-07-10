@@ -22,12 +22,16 @@
     <form method="post" action="register">
         Username: <input type="text" name="username" required /><br/>
         Email: <input type="email" name="email" required /><br/>
-        Password: <input type="password" name="password" required /><br/>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required />
+
+        <label for="confirmPassword">Confirm Password:</label>
+        <input type="password" id="confirmPassword" name="confirmPassword" required />
         <input type="submit" value="Register" />
     </form>
-    <% if (request.getAttribute("error") != null) { %>
-        <p style="color:red;"><%= request.getAttribute("error") %></p>
-    <% } %>
+    <c:if test="${not empty error}">
+        <div class="error" style="color: red; margin-top: 10px;">${error}</div>
+    </c:if>
     <p>Already have an account? <a href="login">Login here</a></p>
 </body>
 </html>
