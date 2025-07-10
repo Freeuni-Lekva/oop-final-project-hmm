@@ -249,40 +249,31 @@
             </div>
         </div>
         
-        <!-- Admin Actions -->
-        <div class="admin-actions">
-            <h3>Administration Functions</h3>
-            <div class="action-buttons">
-                <a href="${pageContext.request.contextPath}/admin/announcements" class="action-btn">
-                    <span class="icon">📢</span>
-                    Manage Announcements
-                </a>
-                
-                <a href="${pageContext.request.contextPath}/admin/users" class="action-btn">
-                    <span class="icon">👥</span>
-                    Manage Users
-                </a>
-                
-                <a href="${pageContext.request.contextPath}/admin/quizzes" class="action-btn">
-                    <span class="icon">📝</span>
-                    Manage Quizzes
-                </a>
-                
-                <a href="${pageContext.request.contextPath}/admin/statistics" class="action-btn">
-                    <span class="icon">📊</span>
-                    Detailed Statistics
-                </a>
-                
-                <a href="${pageContext.request.contextPath}/admin/cleanup" class="action-btn">
-                    <span class="icon">🧹</span>
-                    Data Cleanup
-                </a>
-                
-                <a href="${pageContext.request.contextPath}/admin/settings" class="action-btn">
-                    <span class="icon">⚙️</span>
-                    System Settings
-                </a>
-            </div>
+        <!-- Admin Actions Grid -->
+        <div class="actions-grid">
+            <a href="${pageContext.request.contextPath}/admin/announcements" class="action-btn">
+                <i class="icon">📢</i>
+                <h3>Manage Announcements</h3>
+                <p>Create, edit, and manage site announcements</p>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/admin/users" class="action-btn">
+                <i class="icon">👤</i>
+                <h3>Manage Users</h3>
+                <p>View users, delete accounts, promote to admin</p>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/admin/quizzes" class="action-btn">
+                <i class="icon">📝</i>
+                <h3>Manage Quizzes</h3>
+                <p>View and delete quizzes from the system</p>
+            </a>
+            
+            <a href="${pageContext.request.contextPath}/admin/cleanup" class="action-btn">
+                <i class="icon">🧹</i>
+                <h3>Data Cleanup</h3>
+                <p>Clear quiz history and inactive content</p>
+            </a>
         </div>
         
         <!-- Recent Activity -->
