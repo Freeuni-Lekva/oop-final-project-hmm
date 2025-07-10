@@ -3,10 +3,12 @@ package controller;
 import dao.QuizDAO;
 import dao.QuizAttemptDAO;
 import dao.AnnouncementDAO;
+import dao.MessageDAO;
 import model.Quiz;
 import model.QuizAttempt;
 import model.Announcement;
 import model.User;
+import model.Message;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,6 +24,7 @@ public class HomeController extends HttpServlet {
     private QuizDAO quizDAO;
     private QuizAttemptDAO quizAttemptDAO;
     private AnnouncementDAO announcementDAO;
+    private MessageDAO messageDAO;
 
     @Override
     public void init() throws ServletException {
@@ -29,6 +32,7 @@ public class HomeController extends HttpServlet {
         quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
         quizAttemptDAO = (QuizAttemptDAO) getServletContext().getAttribute("quizAttemptDAO");
         announcementDAO = (AnnouncementDAO) getServletContext().getAttribute("announcementDAO");
+        messageDAO = (MessageDAO) getServletContext().getAttribute("messageDAO");
     }
 
     @Override
@@ -59,6 +63,26 @@ public class HomeController extends HttpServlet {
                 // User's created quizzes
                 List<Quiz> userCreatedQuizzes = quizDAO.getQuizzesByCreator(user.getUserId());
                 req.setAttribute("userCreatedQuizzes", userCreatedQuizzes);
+
+                // Add unread message badge info for logged-in users
+                try {
+                    int unreadCount = messageDAO.getUnreadMessageCount(user.getUserId());
+                    req.setAttribute("unreadMessageCount", unreadCount);
+                    String recentTypeEmoji = null;
+                    if (unreadCount > 0) {
+                        java.util.List<Message> unreadMessages = messageDAO.getUnreadMessages(user.getUserId());
+                        if (!unreadMessages.isEmpty()) {
+                            String type = unreadMessages.get(0).getMessageType();
+                            if ("note".equals(type)) recentTypeEmoji = "📝";
+                            else if ("challenge".equals(type)) recentTypeEmoji = "🎯";
+                            else if ("friend_request".equals(type)) recentTypeEmoji = "👥";
+                        }
+                    }
+                    req.setAttribute("recentUnreadTypeEmoji", recentTypeEmoji);
+                } catch (Exception e) {
+                    req.setAttribute("unreadMessageCount", 0);
+                    req.setAttribute("recentUnreadTypeEmoji", null);
+                }
             }
 
             req.getRequestDispatcher("/index.jsp").forward(req, resp);
