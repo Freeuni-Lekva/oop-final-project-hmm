@@ -215,6 +215,19 @@ public class AnnouncementDAO {
         }
     }
     
+    /**
+     * Delete all announcements (admin cleanup function)
+     * @return Number of announcements deleted
+     * @throws SQLException If database error occurs
+     */
+    public int deleteAllAnnouncements() throws SQLException {
+        String sql = "DELETE FROM announcements";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            return stmt.executeUpdate();
+        }
+    }
+    
     // ========================= STATISTICS =========================
     
     /**
