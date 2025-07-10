@@ -829,6 +829,19 @@ public class QuizAttemptDAO {
         return leaderboard;
     }
 
+    /**
+     * Delete all quiz attempts (admin cleanup function)
+     * @return Number of attempts deleted
+     * @throws SQLException If database error occurs
+     */
+    public int deleteAllAttempts() throws SQLException {
+        String sql = "DELETE FROM quiz_attempts";
+        
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            return stmt.executeUpdate();
+        }
+    }
+
     // ========================= HELPER METHODS =========================
     
     /**

@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Data Access Object for Announcement entity
- * Provides full CRUD operations and announcement-specific functionality
+ * Provides CRUD operations and announcement-specific functionality
  */
 public class AnnouncementDAO {
     
@@ -52,33 +52,6 @@ public class AnnouncementDAO {
             }
         }
         return null;
-    }
-    
-    /**
-     * Create a new announcement with specified priority
-     * @param title Announcement title
-     * @param content Announcement content
-     * @param createdBy ID of the user creating the announcement
-     * @param priority Priority level
-     * @return The created announcement, or null if creation failed
-     * @throws SQLException If database error occurs
-     */
-    public Announcement createAnnouncement(String title, String content, int createdBy, Announcement.Priority priority) throws SQLException {
-        Announcement announcement = new Announcement(title, content, createdBy, priority);
-        return createAnnouncement(announcement);
-    }
-    
-    /**
-     * Create a new announcement with default priority (MEDIUM)
-     * @param title Announcement title
-     * @param content Announcement content
-     * @param createdBy ID of the user creating the announcement
-     * @return The created announcement, or null if creation failed
-     * @throws SQLException If database error occurs
-     */
-    public Announcement createAnnouncement(String title, String content, int createdBy) throws SQLException {
-        Announcement announcement = new Announcement(title, content, createdBy);
-        return createAnnouncement(announcement);
     }
     
     // ========================= READ OPERATIONS =========================
@@ -172,93 +145,6 @@ public class AnnouncementDAO {
         return announcements;
     }
     
-    /**
-     * Get announcements by priority
-     * @param priority Priority level to filter by
-     * @param activeOnly Whether to include only active announcements
-     * @return List of announcements with specified priority
-     * @throws SQLException If database error occurs
-     */
-    public List<Announcement> getAnnouncementsByPriority(Announcement.Priority priority, boolean activeOnly) throws SQLException {
-        String sql = "SELECT id, title, content, created_by, created_date, is_active, priority " +
-                    "FROM announcements WHERE priority = ?";
-        
-        if (activeOnly) {
-            sql += " AND is_active = TRUE";
-        }
-        
-        sql += " ORDER BY created_date DESC";
-        
-        List<Announcement> announcements = new ArrayList<>();
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, priority.getValue());
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    announcements.add(mapRowToAnnouncement(rs));
-                }
-            }
-        }
-        return announcements;
-    }
-    
-    /**
-     * Get announcements created by a specific user
-     * @param createdBy User ID of the creator
-     * @return List of announcements created by the user
-     * @throws SQLException If database error occurs
-     */
-    public List<Announcement> getAnnouncementsByCreator(int createdBy) throws SQLException {
-        String sql = "SELECT id, title, content, created_by, created_date, is_active, priority " +
-                    "FROM announcements WHERE created_by = ? ORDER BY created_date DESC";
-        List<Announcement> announcements = new ArrayList<>();
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, createdBy);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    announcements.add(mapRowToAnnouncement(rs));
-                }
-            }
-        }
-        return announcements;
-    }
-    
-    /**
-     * Search announcements by title or content
-     * @param searchTerm Search term to look for in title or content
-     * @param activeOnly Whether to include only active announcements
-     * @return List of matching announcements
-     * @throws SQLException If database error occurs
-     */
-    public List<Announcement> searchAnnouncements(String searchTerm, boolean activeOnly) throws SQLException {
-        String sql = "SELECT id, title, content, created_by, created_date, is_active, priority " +
-                    "FROM announcements WHERE (title LIKE ? OR content LIKE ?)";
-        
-        if (activeOnly) {
-            sql += " AND is_active = TRUE";
-        }
-        
-        sql += " ORDER BY created_date DESC";
-        
-        List<Announcement> announcements = new ArrayList<>();
-        String searchPattern = "%" + searchTerm + "%";
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, searchPattern);
-            stmt.setString(2, searchPattern);
-            
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    announcements.add(mapRowToAnnouncement(rs));
-                }
-            }
-        }
-        return announcements;
-    }
-    
     // ========================= UPDATE OPERATIONS =========================
     
     /**
@@ -276,44 +162,6 @@ public class AnnouncementDAO {
             stmt.setBoolean(3, announcement.isActive());
             stmt.setString(4, announcement.getPriority().getValue());
             stmt.setInt(5, announcement.getId());
-            
-            return stmt.executeUpdate() > 0;
-        }
-    }
-    
-    /**
-     * Update announcement title and content
-     * @param id Announcement ID
-     * @param title New title
-     * @param content New content
-     * @return true if update was successful, false otherwise
-     * @throws SQLException If database error occurs
-     */
-    public boolean updateAnnouncementContent(int id, String title, String content) throws SQLException {
-        String sql = "UPDATE announcements SET title = ?, content = ? WHERE id = ?";
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, title);
-            stmt.setString(2, content);
-            stmt.setInt(3, id);
-            
-            return stmt.executeUpdate() > 0;
-        }
-    }
-    
-    /**
-     * Update announcement priority
-     * @param id Announcement ID
-     * @param priority New priority
-     * @return true if update was successful, false otherwise
-     * @throws SQLException If database error occurs
-     */
-    public boolean updateAnnouncementPriority(int id, Announcement.Priority priority) throws SQLException {
-        String sql = "UPDATE announcements SET priority = ? WHERE id = ?";
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, priority.getValue());
-            stmt.setInt(2, id);
             
             return stmt.executeUpdate() > 0;
         }
@@ -353,40 +201,34 @@ public class AnnouncementDAO {
             return stmt.executeUpdate() > 0;
         }
     }
-    
+
     /**
-     * Delete all inactive announcements older than specified days
-     * @param daysOld Number of days - announcements older than this will be deleted
+     * Delete all inactive announcements (admin cleanup function)
      * @return Number of announcements deleted
      * @throws SQLException If database error occurs
      */
-    public int deleteOldInactiveAnnouncements(int daysOld) throws SQLException {
-        String sql = "DELETE FROM announcements WHERE is_active = FALSE AND created_date < DATE_SUB(NOW(), INTERVAL ? DAY)";
+    public int deleteInactiveAnnouncements() throws SQLException {
+        String sql = "DELETE FROM announcements WHERE is_active = FALSE";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, daysOld);
             return stmt.executeUpdate();
         }
     }
     
-    // ========================= VALIDATION AND STATISTICS =========================
-    
     /**
-     * Check if an announcement exists
-     * @param id Announcement ID
-     * @return true if announcement exists, false otherwise
+     * Delete all announcements (admin cleanup function)
+     * @return Number of announcements deleted
      * @throws SQLException If database error occurs
      */
-    public boolean announcementExists(int id) throws SQLException {
-        String sql = "SELECT 1 FROM announcements WHERE id = ?";
+    public int deleteAllAnnouncements() throws SQLException {
+        String sql = "DELETE FROM announcements";
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                return rs.next();
-            }
+            return stmt.executeUpdate();
         }
     }
+    
+    // ========================= STATISTICS =========================
     
     /**
      * Get total count of announcements
@@ -401,54 +243,6 @@ public class AnnouncementDAO {
         }
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        }
-        return 0;
-    }
-    
-    /**
-     * Get count of announcements by priority
-     * @param priority Priority level
-     * @param activeOnly Whether to count only active announcements
-     * @return Count of announcements with specified priority
-     * @throws SQLException If database error occurs
-     */
-    public int getAnnouncementCountByPriority(Announcement.Priority priority, boolean activeOnly) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM announcements WHERE priority = ?";
-        if (activeOnly) {
-            sql += " AND is_active = TRUE";
-        }
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setString(1, priority.getValue());
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            }
-        }
-        return 0;
-    }
-    
-    /**
-     * Get recent announcements count (within specified days)
-     * @param days Number of days to look back
-     * @param activeOnly Whether to count only active announcements
-     * @return Count of recent announcements
-     * @throws SQLException If database error occurs
-     */
-    public int getRecentAnnouncementCount(int days, boolean activeOnly) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM announcements WHERE created_date >= DATE_SUB(NOW(), INTERVAL ? DAY)";
-        if (activeOnly) {
-            sql += " AND is_active = TRUE";
-        }
-        
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            stmt.setInt(1, days);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return rs.getInt(1);

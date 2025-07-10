@@ -12,6 +12,7 @@ import dao.QuizAttemptDAO;
 import dao.FriendshipDAO;
 import dao.MessageDAO;
 import dao.AchievementDAO;
+import dao.AnnouncementDAO;
 
 @WebListener
 public class AppContextListener implements ServletContextListener
@@ -35,6 +36,7 @@ public class AppContextListener implements ServletContextListener
             FriendshipDAO friendshipDAO = new FriendshipDAO(_connection);
             MessageDAO messageDAO = new MessageDAO(_connection);
             AchievementDAO achievementDAO = new AchievementDAO(_connection);
+            AnnouncementDAO announcementDAO = new AnnouncementDAO(_connection);
 
             e.getServletContext().setAttribute("userDAO", userDAO);
             e.getServletContext().setAttribute("quizDAO", quizDAO);
@@ -43,6 +45,7 @@ public class AppContextListener implements ServletContextListener
             e.getServletContext().setAttribute("friendshipDAO", friendshipDAO);
             e.getServletContext().setAttribute("messageDAO", messageDAO);
             e.getServletContext().setAttribute("achievementDAO", achievementDAO);
+            e.getServletContext().setAttribute("announcementDAO", announcementDAO);
         }
         catch (Exception ex)
         {
