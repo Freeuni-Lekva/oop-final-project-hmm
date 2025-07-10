@@ -4,6 +4,7 @@ import dao.UserDAO;
 import dao.QuizDAO;
 import dao.QuizAttemptDAO;
 import dao.AnnouncementDAO;
+import dao.QuestionDAO;
 import model.User;
 import model.Announcement;
 import util.PasswordHasher;
@@ -17,6 +18,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @WebServlet(urlPatterns = {
     "/admin", "/admin/login", "/admin/dashboard", "/admin/logout",
@@ -30,6 +33,7 @@ public class AdminController extends HttpServlet {
     private QuizDAO quizDAO;
     private QuizAttemptDAO quizAttemptDAO;
     private AnnouncementDAO announcementDAO;
+    private QuestionDAO questionDAO;
 
     @Override
     public void init() throws ServletException {
@@ -38,6 +42,7 @@ public class AdminController extends HttpServlet {
             userDAO = (UserDAO) getServletContext().getAttribute("userDAO");
             quizDAO = (QuizDAO) getServletContext().getAttribute("quizDAO");
             quizAttemptDAO = (QuizAttemptDAO) getServletContext().getAttribute("quizAttemptDAO");
+            questionDAO = (QuestionDAO) getServletContext().getAttribute("questionDAO");
             
             // Create AnnouncementDAO if not already in context
             announcementDAO = (AnnouncementDAO) getServletContext().getAttribute("announcementDAO");
@@ -285,7 +290,31 @@ public class AdminController extends HttpServlet {
     private void handleQuizzesList(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             List<model.Quiz> quizzes = quizDAO.getAllQuizzes();
+            
+            // Create maps to store additional info for each quiz
+            Map<Integer, String> creatorNames = new HashMap<>();
+            Map<Integer, Integer> questionCounts = new HashMap<>();
+            Map<Integer, Integer> attemptCounts = new HashMap<>();
+            
+            // Fetch additional data for each quiz
+            for (model.Quiz quiz : quizzes) {
+                // Get creator username
+                User creator = userDAO.findById(quiz.getCreatorId());
+                creatorNames.put(quiz.getQuizId(), creator != null ? creator.getUsername() : "Unknown");
+                
+                // Get question count
+                int questionCount = questionDAO.getQuestionCountByQuiz(quiz.getQuizId());
+                questionCounts.put(quiz.getQuizId(), questionCount);
+                
+                // Get attempt count
+                int attemptCount = quizAttemptDAO.getAttemptCountByQuiz(quiz.getQuizId());
+                attemptCounts.put(quiz.getQuizId(), attemptCount);
+            }
+            
             req.setAttribute("quizzes", quizzes);
+            req.setAttribute("creatorNames", creatorNames);
+            req.setAttribute("questionCounts", questionCounts);
+            req.setAttribute("attemptCounts", attemptCounts);
             req.getRequestDispatcher("/jsp/admin/quizzesList.jsp").forward(req, resp);
         } catch (SQLException e) {
             throw new ServletException("Database error while loading quizzes list", e);
