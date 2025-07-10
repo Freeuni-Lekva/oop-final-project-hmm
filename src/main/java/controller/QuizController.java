@@ -16,11 +16,14 @@ import java.util.List;
 import dao.QuestionDAO;
 import model.Question;
 import java.util.ArrayList;
+import dao.AchievementDAO;
+import model.Achievement;
 
 @WebServlet(urlPatterns = {"/quizzes", "/quiz", "/quiz/create", "/quiz/addQuestion"})
 public class QuizController extends HttpServlet {
     private QuizDAO quizDAO;
     private QuestionDAO questionDAO;
+    private AchievementDAO achievementDAO;
 
     @Override
     public void init() throws ServletException
@@ -30,6 +33,7 @@ public class QuizController extends HttpServlet {
             Connection connection = (Connection) getServletContext().getAttribute("DBConnection");
             quizDAO = (QuizDAO)getServletContext().getAttribute("quizDAO");
             questionDAO = (QuestionDAO)getServletContext().getAttribute("questionDAO");
+            achievementDAO = (AchievementDAO)getServletContext().getAttribute("achievementDAO");
         }
         catch (Exception e)
         {
@@ -155,6 +159,12 @@ public class QuizController extends HttpServlet {
                         boolean quizImmediateCorrection = qSession.getAttribute("pendingQuizImmediateCorrection") != null && (Boolean) qSession.getAttribute("pendingQuizImmediateCorrection");
                         model.User quizUser = (model.User) qSession.getAttribute("user");
                         int creatorId = quizUser.getUserId();
+                        // Duplicate title check
+                        if (quizDAO.findByTitle(quizTitle) != null) {
+                            req.setAttribute("error", "A quiz with this title already exists. Please choose a different name.");
+                            req.getRequestDispatcher("/jsp/createQuiz.jsp").forward(req, resp);
+                            return;
+                        }
                         Quiz quiz = new Quiz(quizTitle, quizDescription, creatorId);
                         quiz.setRandomOrder(quizRandomOrder);
                         quiz.setOnePage(quizOnePage);
@@ -167,14 +177,25 @@ public class QuizController extends HttpServlet {
                             q.setOrderNum(qOrder++);
                             questionDAO.createQuestion(q);
                         }
+                        // Award achievements for quiz creation
+                        int createdCount = quizDAO.getQuizzesByCreator(creatorId).size();
+                        if (createdCount >= 1) {
+                            achievementDAO.awardAchievement(creatorId, model.Achievement.AMATEUR_AUTHOR);
+                        }
+                        if (createdCount >= 5) {
+                            achievementDAO.awardAchievement(creatorId, model.Achievement.PROLIFIC_AUTHOR);
+                        }
+                        if (createdCount >= 10) {
+                            achievementDAO.awardAchievement(creatorId, model.Achievement.PRODIGIOUS_AUTHOR);
+                        }
                         // Clear session data
                         qSession.removeAttribute("pendingQuizTitle");
                         qSession.removeAttribute("pendingQuizDescription");
-                        qSession.removeAttribute("pendingQuizQuestions");
                         qSession.removeAttribute("pendingQuizRandomOrder");
                         qSession.removeAttribute("pendingQuizOnePage");
                         qSession.removeAttribute("pendingQuizImmediateCorrection");
-                        resp.sendRedirect(req.getContextPath() + "/index.jsp");
+                        qSession.removeAttribute("pendingQuizQuestions");
+                        resp.sendRedirect(req.getContextPath() + "/");
                     }
                     break;
                 default:

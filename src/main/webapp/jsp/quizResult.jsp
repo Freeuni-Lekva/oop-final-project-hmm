@@ -25,6 +25,6 @@
 <p>Your Score: <%= String.format("%.2f", score) %>%</p>
 <p>Correct Answers: <%= correct %> / <%= totalQuestions %></p>
 <p>Time Taken: <%= timeTaken %> seconds</p>
-<a href="${pageContext.request.contextPath}/index.jsp"><button>Back to Home</button></a>
+<a href="${pageContext.request.contextPath}/"><button>Back to Home</button></a>
 </body>
 </html>

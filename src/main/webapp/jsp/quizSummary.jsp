@@ -24,7 +24,7 @@
     <tr><th>Username</th><th>Score</th><th>Total Questions</th><th>Time Taken (s)</th><th>Date Taken</th></tr>
     <% for (model.QuizAttempt a : (java.util.List<model.QuizAttempt>)request.getAttribute("allTimeTop")) { %>
         <tr>
-            <td><%= userIdToUsername.get(a.getUserId()) %></td>
+            <td><a href="${pageContext.request.contextPath}/user?username=<%= userIdToUsername.get(a.getUserId()) %>&quizId=<%= quizId %>"><%= userIdToUsername.get(a.getUserId()) %></a></td>
             <td><%= a.getScore() %></td>
             <td><%= a.getTotalQuestions() %></td>
             <td><%= a.getTimeTaken() %></td>
@@ -38,7 +38,7 @@
     <tr><th>Username</th><th>Score</th><th>Total Questions</th><th>Time Taken (s)</th><th>Date Taken</th></tr>
     <% for (model.QuizAttempt a : (java.util.List<model.QuizAttempt>)request.getAttribute("lastDayTop")) { %>
         <tr>
-            <td><%= userIdToUsername.get(a.getUserId()) %></td>
+            <td><a href="${pageContext.request.contextPath}/user?username=<%= userIdToUsername.get(a.getUserId()) %>&quizId=<%= quizId %>"><%= userIdToUsername.get(a.getUserId()) %></a></td>
             <td><%= a.getScore() %></td>
             <td><%= a.getTotalQuestions() %></td>
             <td><%= a.getTimeTaken() %></td>
@@ -52,7 +52,7 @@
     <tr><th>Username</th><th>Score</th><th>Total Questions</th><th>Time Taken (s)</th><th>Date Taken</th></tr>
     <% for (model.QuizAttempt a : (java.util.List<model.QuizAttempt>)request.getAttribute("recentAttempts")) { %>
         <tr>
-            <td><%= userIdToUsername.get(a.getUserId()) %></td>
+            <td><a href="${pageContext.request.contextPath}/user?username=<%= userIdToUsername.get(a.getUserId()) %>&quizId=<%= quizId %>"><%= userIdToUsername.get(a.getUserId()) %></a></td>
             <td><%= a.getScore() %></td>
             <td><%= a.getTotalQuestions() %></td>
             <td><%= a.getTimeTaken() %></td>

@@ -20,7 +20,7 @@ CREATE TABLE users (
 -- Quizzes table
 CREATE TABLE quizzes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
     creator_id INT NOT NULL,
     random_order BOOLEAN DEFAULT FALSE,
@@ -112,6 +112,22 @@ CREATE TABLE achievements (
     UNIQUE KEY unique_user_achievement (user_id, achievement_type),
     INDEX idx_user_id (user_id),
     INDEX idx_achievement_type (achievement_type)
+);
+
+-- Announcements table
+CREATE TABLE announcements (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_by INT NOT NULL,
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_active BOOLEAN DEFAULT TRUE,
+    priority ENUM('low', 'medium', 'high') DEFAULT 'medium',
+    FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_created_date (created_date),
+    INDEX idx_is_active (is_active),
+    INDEX idx_priority (priority),
+    INDEX idx_created_by (created_by)
 );
 
 -- Insert sample admin user

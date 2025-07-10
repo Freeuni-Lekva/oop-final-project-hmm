@@ -133,7 +133,8 @@ public class MessageDAO {
      * @throws SQLException If database error occurs
      */
     public List<Message> getReceivedMessages(int receiverId) throws SQLException {
-        String sql = "SELECT id, sender_id, receiver_id, message_type, content, quiz_id, date_sent, is_read FROM messages WHERE receiver_id = ? ORDER BY date_sent DESC";
+        String sql = "SELECT m.id, m.sender_id, m.receiver_id, m.message_type, m.content, m.quiz_id, m.date_sent, m.is_read, u.username as sender_username " +
+                     "FROM messages m JOIN users u ON m.sender_id = u.id WHERE m.receiver_id = ? ORDER BY m.date_sent DESC";
         List<Message> messages = new ArrayList<>();
         
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
@@ -632,26 +633,22 @@ public class MessageDAO {
      * @throws SQLException If database error occurs
      */
     private Message mapRowToMessage(ResultSet rs) throws SQLException {
-        Message message = new Message();
-        message.setMessageId(rs.getInt("id"));
-        message.setSenderId(rs.getInt("sender_id"));
-        message.setReceiverId(rs.getInt("receiver_id"));
-        message.setMessageType(rs.getString("message_type"));
-        message.setContent(rs.getString("content"));
-        
-        // Handle nullable quiz_id
-        int quizId = rs.getInt("quiz_id");
-        if (!rs.wasNull()) {
-            message.setQuizId(quizId);
+        Message message = new Message(
+            rs.getInt("id"),
+            rs.getInt("sender_id"),
+            rs.getInt("receiver_id"),
+            rs.getString("message_type"),
+            rs.getString("content"),
+            (rs.getObject("quiz_id") != null ? rs.getInt("quiz_id") : null),
+            rs.getTimestamp("date_sent"),
+            rs.getBoolean("is_read")
+        );
+        try {
+            String senderUsername = rs.getString("sender_username");
+            message.setSenderUsername(senderUsername);
+        } catch (SQLException e) {
+            // sender_username column may not exist in some queries
         }
-        
-        Timestamp dateSentTimestamp = rs.getTimestamp("date_sent");
-        if (dateSentTimestamp != null) {
-            message.setDateSent(new Date(dateSentTimestamp.getTime()));
-        }
-        
-        message.setRead(rs.getBoolean("is_read"));
-        
         return message;
     }
 } 
