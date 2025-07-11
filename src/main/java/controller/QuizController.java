@@ -138,6 +138,25 @@ public class QuizController extends HttpServlet {
                         if (choices != null) {
                             for (String c : choices) choiceList.add(c);
                         }
+                        // Validation: correct answer must be in choices
+                        boolean valid = false;
+                        if (correctAnswer != null && !correctAnswer.trim().isEmpty()) {
+                            for (String c : choiceList) {
+                                if (c.trim().equalsIgnoreCase(correctAnswer.trim())) {
+                                    valid = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!valid) {
+                            req.setAttribute("error", "<span style='color:red;'>Correct answer must match one of the choices exactly.</span>");
+                            req.setAttribute("questionType", questionType);
+                            req.setAttribute("questionText", questionText);
+                            req.setAttribute("choices", choiceList);
+                            req.setAttribute("correctAnswer", correctAnswer);
+                            req.getRequestDispatcher("/jsp/addQuestion.jsp").forward(req, resp);
+                            return;
+                        }
                         question = new Question(-1, questionType, questionText, correctAnswer, orderNum);
                         question.setChoices(choiceList);
                     } else if ("picture-response".equals(questionType)) {

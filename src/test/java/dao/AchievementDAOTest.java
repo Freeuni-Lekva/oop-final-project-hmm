@@ -67,8 +67,8 @@ class AchievementDAOTest {
 
     private static void cleanUpTestAchievements() throws SQLException {
         try (Statement stmt = connection.createStatement()) {
-            // Delete ALL achievements from test users to ensure clean state
-            stmt.executeUpdate("DELETE FROM achievements WHERE user_id IN (1, 2)");
+            // Delete ALL achievements for a truly clean state
+            stmt.executeUpdate("DELETE FROM achievements");
         }
     }
 
