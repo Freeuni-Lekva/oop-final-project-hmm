@@ -755,7 +755,7 @@
                 <% } %>
                 
                 <form action="logout" method="get">
-                    <button type="submit" class="logout-btn">🚪 Logout</button>
+                    <button type="submit" class="logout-btn">Logout</button>
                 </form>
             </div>
         </div>
