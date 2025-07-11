@@ -255,7 +255,7 @@
     <div class="main-container">
         <div class="page-header">
             <div class="page-icon">🔐</div>
-            <h1 class="page-title">Welcome Back</h1>
+            <h1 class="page-title">Welcome Back!</h1>
             <p class="page-subtitle">Sign in to your account</p>
         </div>
         
