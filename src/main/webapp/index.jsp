@@ -591,7 +591,7 @@
             
             <div class="hero-stats">
                 <div class="stat-item">
-                    <span class="stat-number"><%= (popularQuizzes != null ? popularQuizzes.size() : 0) + (recentQuizzes != null ? recentQuizzes.size() : 0) %></span>
+                    <span class="stat-number"><%= quizzes != null ? quizzes.size() : 0 %></span>
                     <span class="stat-label">Active Quizzes</span>
                 </div>
                 <% if (user == null) { %>
