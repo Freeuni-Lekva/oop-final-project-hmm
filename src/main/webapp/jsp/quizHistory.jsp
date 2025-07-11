@@ -432,7 +432,7 @@
                                             <span class="practice-badge ${attempt.practice ? 'practice-yes' : 'practice-no'}">
                                                 <c:choose>
                                                     <c:when test="${attempt.practice}">Practice</c:when>
-                                                    <c:otherwise>Scored</c:otherwise>
+                                                    <c:otherwise>Non Practice</c:otherwise>
                                                 </c:choose>
                                             </span>
                                         </td>
