@@ -852,6 +852,7 @@
             <a href="${pageContext.request.contextPath}/" class="nav-logo">🎯 QuizWebsite</a>
             
             <div class="nav-links">
+                <a href="${pageContext.request.contextPath}/quizzes" class="nav-link">Browse Quizzes</a>
                 <% if (user != null) { %>
                     <a href="${pageContext.request.contextPath}/quiz/create" class="nav-link">Create Quiz</a>
                     <a href="${pageContext.request.contextPath}/profile" class="nav-link">Profile</a>
