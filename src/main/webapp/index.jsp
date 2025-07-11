@@ -849,10 +849,9 @@
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="nav-container">
-            <a href="${pageContext.request.contextPath}/" class="nav-logo">🎯 QuizMaster</a>
+            <a href="${pageContext.request.contextPath}/" class="nav-logo">🎯 QuizWebsite</a>
             
             <div class="nav-links">
-                <a href="${pageContext.request.contextPath}/quizzes" class="nav-link">Browse Quizzes</a>
                 <% if (user != null) { %>
                     <a href="${pageContext.request.contextPath}/quiz/create" class="nav-link">Create Quiz</a>
                     <a href="${pageContext.request.contextPath}/profile" class="nav-link">Profile</a>
@@ -916,9 +915,6 @@
         <!-- Quick Actions -->
         <div class="quick-actions">
             <% if (user != null) { %>
-                <a href="quiz/create" class="quick-action-btn">
-                    <span>➕</span> Create Quiz
-                </a>
                 <a href="profile" class="quick-action-btn">
                     <span>👤</span> My Profile
                 </a>
